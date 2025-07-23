@@ -25,6 +25,7 @@ class Game extends Model
      */
     protected $fillable = [
         'name',
+        'slug',
         'type',
         'min_bet',
         'max_bet',

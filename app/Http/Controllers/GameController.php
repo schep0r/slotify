@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Game;
 use App\Services\GameEngine;
 use App\Http\Requests\SpinRequest;
 use App\Models\GameSession;
@@ -15,6 +16,26 @@ class GameController extends Controller
     public function __construct(GameEngine $gameEngine)
     {
         $this->gameEngine = $gameEngine;
+    }
+
+    public function index()
+    {
+        return Game::all();
+    }
+
+    public function show(Game $game)
+    {
+        return $game;
+    }
+
+    public function config(Game $game)
+    {
+        return $game;
+    }
+
+    public function paytable(Game $game)
+    {
+        return $game;
     }
 
     public function spin(SpinRequest $request)

@@ -4,7 +4,6 @@ namespace App\Services;
 
 use App\Models\GameSession;
 use App\Models\SlotConfiguration;
-use App\Models\PaylineConfiguration;
 use App\Exceptions\InsufficientBalanceException;
 use App\Exceptions\InvalidBetException;
 use App\Models\User;
@@ -26,7 +25,7 @@ class GameEngine
     {
         $this->rng = $rng;
         $this->payoutCalculator = $payoutCalculator;
-        $this->loadConfiguration();
+//        $this->loadConfiguration();
     }
 
     /**

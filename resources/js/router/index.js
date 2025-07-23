@@ -1,10 +1,16 @@
 import { createRouter, createWebHistory } from 'vue-router';
-import GameLayout from "../components/Layout/GameLayout.vue";
+import GamePage from "../views/GamePage.vue";
+import GamesPage from "../views/GamesPage.vue";
 
 const routes = [
     {
-        path: '/',
-        component: GameLayout,
+        path: '/games',
+        component: GamesPage,
+    },
+    {
+        path: '/games/:gameId',
+        component: GamePage,
+        props: true,
     },
 ];
 

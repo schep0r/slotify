@@ -1,12 +1,21 @@
 <script setup>
 import { onMounted } from 'vue';
-import { useGameStore } from './../../stores/gameStore';
-import BalanceDisplay from './../UI/BalanceDisplay.vue';
-import BetControls from './../UI/BetControls.vue';
-import SpinButton from './../UI/SpinButton.vue';
-import SlotMachine from './../SlotMachine/SlotMachine.vue';
-import PayoutTable from './../SlotMachine/PayoutTable.vue';
+import { useRoute } from 'vue-router';
+import { useGameStore } from '../stores/gameStore.js';
+import BalanceDisplay from '../components/UI/BalanceDisplay.vue';
+import BetControls from '../components/UI/BetControls.vue';
+import SpinButton from '../components/UI/SpinButton.vue';
+import SlotMachine from '../components/SlotMachine/SlotMachine.vue';
+import PayoutTable from '../components/SlotMachine/PayoutTable.vue';
 
+const props = defineProps({
+    gameId: {
+        type: String,
+        required: false
+    }
+});
+
+const route = useRoute();
 const gameStore = useGameStore();
 
 const handleSpin = async () => {
@@ -18,6 +27,15 @@ const handleBetChange = (newBet) => {
 };
 
 onMounted(() => {
+    // Use the gameId from props or from route params
+    const gameId = props.gameId || route.params.gameId;
+
+    // If we have a gameId, we could use it to fetch specific game configuration
+    // For now, just log it and call the existing fetchConfiguration method
+    if (gameId) {
+        console.log(`Loading game with ID: ${gameId}`);
+    }
+
     gameStore.fetchConfiguration();
 });
 </script>

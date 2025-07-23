@@ -14,7 +14,10 @@ return new class extends Migration
         Schema::create('games', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->enum('type', ['classic', 'video', 'progressive'])->default('classic');
+            $table->string('slug')->unique();
+            $table->string('provider');
+            $table->string('status')->nullable(false);
+            $table->string('type')->nullable(false);
             $table->decimal('min_bet', 8, 2);
             $table->decimal('max_bet', 8, 2);
             $table->integer('reels')->default(5);

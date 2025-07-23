@@ -8,7 +8,6 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\GameController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\TransactionController;
-use App\Http\Controllers\GameConfigController;
 
 /*
 |--------------------------------------------------------------------------
@@ -35,10 +34,10 @@ Route::prefix('v1')->group(function () {
 
     // Public game information (no auth required)
     Route::prefix('games')->group(function () {
-        Route::get('/', [GameConfigController::class, 'index']); // List available games
-        Route::get('/{gameId}', [GameConfigController::class, 'show']); // Game details
-        Route::get('/{gameId}/config', [GameConfigController::class, 'config']); // Game configuration
-        Route::get('/{gameId}/paytable', [GameConfigController::class, 'paytable']); // Payout table
+        Route::get('/', [GameController::class, 'index']); // List available games
+        Route::get('/{gameId}', [GameController::class, 'show']); // Game details
+        Route::get('/{gameId}/config', [GameController::class, 'config']); // Game configuration
+        Route::get('/{gameId}/paytable', [GameController::class, 'paytable']); // Payout table
     });
 
     // Protected API routes (require authentication)
@@ -88,30 +87,6 @@ Route::prefix('v1')->group(function () {
             Route::get('/session/{sessionId}', [UserController::class, 'sessionStats']);
             Route::get('/daily', [UserController::class, 'dailyStats']);
             Route::get('/monthly', [UserController::class, 'monthlyStats']);
-        });
-
-        // Admin routes (if user is admin)
-        Route::middleware(['admin'])->prefix('admin')->group(function () {
-            // Game management
-            Route::apiResource('games', GameConfigController::class);
-            Route::post('/games/{gameId}/activate', [GameConfigController::class, 'activate']);
-            Route::post('/games/{gameId}/deactivate', [GameConfigController::class, 'deactivate']);
-
-            // User management
-            Route::get('/users', [UserController::class, 'adminIndex']);
-            Route::get('/users/{userId}', [UserController::class, 'adminShow']);
-            Route::post('/users/{userId}/balance', [UserController::class, 'adminUpdateBalance']);
-            Route::post('/users/{userId}/suspend', [UserController::class, 'suspend']);
-            Route::post('/users/{userId}/unsuspend', [UserController::class, 'unsuspend']);
-
-            // System statistics
-            Route::get('/stats/system', [TransactionController::class, 'systemStats']);
-            Route::get('/stats/games', [TransactionController::class, 'gameStats']);
-            Route::get('/stats/users', [TransactionController::class, 'userStats']);
-
-            // Transaction monitoring
-            Route::get('/transactions/suspicious', [TransactionController::class, 'suspicious']);
-            Route::get('/transactions/large', [TransactionController::class, 'largeTransactions']);
         });
     });
 });

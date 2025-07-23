@@ -18,6 +18,9 @@ class GameFactory extends Factory
     {
         return [
             'name' => $this->faker->unique()->words(3, true),
+            'slug' => $this->faker->slug(),
+            'provider' => 'lotto649',
+            'status' => 'active',
             'type' => $this->faker->randomElement(['classic', 'video', 'progressive']),
             'min_bet' => $this->faker->randomFloat(2, 0.1, 5),
             'max_bet' => $this->faker->randomFloat(2, 10, 100),

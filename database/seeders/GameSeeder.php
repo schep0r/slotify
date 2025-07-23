@@ -19,6 +19,9 @@ class GameSeeder extends Seeder
         // Create some specific games
         Game::factory()->create([
             'name' => 'Lucky Sevens',
+            'slug' => 'lucky-sevens',
+            'provider' => 'slotify',
+            'status' => 'active',
             'type' => 'classic',
             'min_bet' => 0.25,
             'max_bet' => 50.00,
@@ -31,6 +34,9 @@ class GameSeeder extends Seeder
 
         Game::factory()->create([
             'name' => 'Mega Fortune',
+            'slug' => 'mega-fortune',
+            'provider' => 'slotify',
+            'status' => 'active',
             'type' => 'progressive',
             'min_bet' => 1.00,
             'max_bet' => 100.00,
@@ -43,6 +49,9 @@ class GameSeeder extends Seeder
 
         Game::factory()->create([
             'name' => 'Space Adventure',
+            'slug' => 'space-adventure',
+            'provider' => 'slotify',
+            'status' => 'active',
             'type' => 'video',
             'min_bet' => 0.50,
             'max_bet' => 75.00,
