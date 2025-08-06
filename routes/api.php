@@ -100,3 +100,16 @@ Route::middleware(['auth:sanctum', 'game.session'])
         Route::post('/game/end', [GameController::class, 'endSession']);
         Route::post('/game/autoplay/start', [GameController::class, 'startAutoplay']);
     });
+
+Route::middleware('auth:api')->group(function () {
+    Route::prefix('free-spins')->group(function () {
+        Route::get('/available', [\App\Http\Controllers\FreeSpinController::class, 'getAvailableSpins']);
+        Route::post('/use', [\App\Http\Controllers\FreeSpinController::class, 'useSpin']);
+        Route::get('/stats', [\App\Http\Controllers\FreeSpinController::class, 'getStats']);
+
+        // Admin routes
+        Route::middleware('admin')->group(function () {
+            Route::post('/award', [\App\Http\Controllers\FreeSpinController::class, 'awardSpins']);
+        });
+    });
+});
