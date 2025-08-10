@@ -4,7 +4,6 @@ namespace App\Services;
 
 use App\Models\Game;
 use App\Models\GameSession;
-use App\Models\SlotConfiguration;
 use App\Exceptions\InsufficientBalanceException;
 use App\Exceptions\InvalidBetException;
 use App\Models\Transaction;
@@ -17,14 +16,20 @@ class GameEngine
 {
     private RandomNumberGenerator $rng;
     private PayoutCalculator $payoutCalculator;
+    private GameRoundService $gameRoundService;
+    private GameSessionService $gameSessionService;
 
     public function __construct(
         RandomNumberGenerator $rng,
-        PayoutCalculator $payoutCalculator
+        PayoutCalculator $payoutCalculator,
+        GameRoundService $gameRoundService,
+        GameSessionService $gameSessionService
     )
     {
         $this->rng = $rng;
         $this->payoutCalculator = $payoutCalculator;
+        $this->gameRoundService = $gameRoundService;
+        $this->gameSessionService = $gameSessionService;
     }
 
     /**
@@ -32,8 +37,10 @@ class GameEngine
      */
     public function spin(float $betAmount, int $userId, Game $game): array
     {
+
         $this->validateBet($betAmount, $game);
         $user = $this->getUser($userId);
+        $gameSession = $this->gameSessionService->getOrCreateUserSession($user, $game);
 
         if ($user->balance < $betAmount) {
             throw new InsufficientBalanceException('Insufficient balance for this bet');
@@ -50,15 +57,21 @@ class GameEngine
             $game,
             $visibleSymbols,
             $betAmount,
-            [0, 1, 2, 3, 4]
+            [0]
         );
 
         // Update user balance
         $newBalance = $user->balance - $betAmount + $payoutResult['totalPayout'];
-        $user->update(['balance' => $newBalance]);
 
+        if ($payoutResult['totalPayout'] > 0) {
+            Transaction::createWin($user->id, $gameSession->id, $payoutResult['totalPayout'], $user->balance, $newBalance, $payoutResult);
+        } else {
+            Transaction::createBet($user->id, $gameSession->id, $betAmount, $user->balance, $newBalance, $payoutResult);
+        }
+
+        $user->update(['balance' => $newBalance]);
         // Log the game session
-        $this->logGameSession($userId, $betAmount, $payoutResult, $reelPositions);
+        $this->logGameRound($gameSession, $payoutResult, $betAmount, $visibleSymbols);
 
         return [
             'reelPositions' => $reelPositions,
@@ -121,16 +134,20 @@ class GameEngine
         return User::findOrFail($userId);
     }
 
-    private function logGameSession(int $userId, float $bet, array $payout, array $positions): void
+    private function logGameRound(GameSession $gameSession, array $spinData, float $betAmount, array $visibleSymbols): void
     {
-        GameSession::create([
-            'user_id' => $userId,
-            'bet_amount' => $bet,
-            'payout_amount' => $payout['totalPayout'],
-            'reel_positions' => json_encode($positions),
-            'winning_lines' => json_encode($payout['winningLines']),
-            'is_jackpot' => $payout['isJackpot'] ?? false,
-            'played_at' => now()
-        ]);
+        $spinData = array_merge(
+            $spinData,
+            [
+                'bet_amount' => $betAmount,
+                'win_amount' => $spinData['totalPayout'],
+                'reel_result' => $visibleSymbols,
+            ]
+        );
+
+        $this->gameRoundService->processSpin(
+            $gameSession,
+            $spinData,
+        );
     }
 }

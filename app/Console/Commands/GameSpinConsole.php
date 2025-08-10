@@ -59,18 +59,29 @@ class GameSpinConsole extends Command
         $result = null;
         $errors = [];
 
-        // Try different known signatures due to inconsistencies in the codebase
-        try {
-            // Signature variant 1 (from current GameEngine): spin(float $betAmount, int $userId, array $activePaylines = null)
-            $result = $gameEngine->spin($betAmount, $userId, $game);
-        } catch (Throwable $e1) {
-            $errors[] = $e1->getMessage();
+        $totalSpins = 0;
+        $totalWins = 0;
+        $totalBets = 0;
+
+
+        for ($i = 0; $i < 10000; $i++) {
+            // Try different known signatures due to inconsistencies in the codebase
             try {
-                // Signature variant 2 (as used by GameController): spin(int $gameId, float $betAmount)
-                // Use call_user_func to bypass strict static signature expectations
-                $result = call_user_func([$gameEngine, 'spin'], $gameId, $betAmount);
-            } catch (Throwable $e2) {
-                $errors[] = $e2->getMessage();
+                // Signature variant 1 (from current GameEngine): spin(float $betAmount, int $userId, array $activePaylines = null)
+                $result = $gameEngine->spin($betAmount, $userId, $game);
+
+                $totalSpins++;
+                $totalWins += $result['totalPayout'];
+                $totalBets += $betAmount;
+            } catch (Throwable $e1) {
+                $errors[] = $e1->getMessage();
+                try {
+                    // Signature variant 2 (as used by GameController): spin(int $gameId, float $betAmount)
+                    // Use call_user_func to bypass strict static signature expectations
+                    $result = call_user_func([$gameEngine, 'spin'], $gameId, $betAmount);
+                } catch (Throwable $e2) {
+                    $errors[] = $e2->getMessage();
+                }
             }
         }
 
@@ -83,7 +94,14 @@ class GameSpinConsole extends Command
         }
 
         // Output result nicely
-        $this->line(json_encode($result, JSON_PRETTY_PRINT));
+        $this->line(json_encode(
+            [
+                'total_spins' => $totalSpins,
+                'total_wins' => $totalWins,
+                'total_bets' => $totalBets,
+                'rtp' => $totalWins / $totalBets * 100,
+            ],
+            JSON_PRETTY_PRINT));
 
         return Command::SUCCESS;
     }

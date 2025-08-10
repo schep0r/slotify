@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\User;
 use App\Models\Game;
+use Illuminate\Support\Str;
 
 class GameSession extends Model
 {
@@ -25,6 +26,7 @@ class GameSession extends Model
         'total_win',
         'started_at',
         'ended_at',
+        'status',
     ];
 
     /**
