@@ -30,15 +30,15 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('users', function (Blueprint $table) {
+            $table->dropIndex('users_status_verified_at_index');
+            $table->dropIndex('users_vip_status_index');
+
             $table->dropColumn('status');
             $table->dropColumn('level');
             $table->dropColumn('balance');
             $table->dropColumn('bonus_balance');
             $table->dropColumn('vip_status');
             $table->dropColumn('verified_at');
-
-            $table->dropIndex(['status', 'verified_at']);
-            $table->dropIndex('vip_status');
         });
     }
 };

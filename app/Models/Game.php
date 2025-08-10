@@ -4,7 +4,6 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use App\Models\GameSession;
 
 class Game extends Model
 {
@@ -16,6 +15,31 @@ class Game extends Model
     public function gameSessions()
     {
         return $this->hasMany(GameSession::class);
+    }
+
+    public function configuration()
+    {
+        return $this->hasMany(GameConfiguration::class);
+    }
+
+    public function reelsConfiguration()
+    {
+        return $this->hasOne(GameConfiguration::class)->reels();
+    }
+
+    public function rowsConfiguration()
+    {
+        return $this->hasOne(GameConfiguration::class)->rowsNumber();
+    }
+
+    public function paylinesConfiguration()
+    {
+        return $this->hasOne(GameConfiguration::class)->paylines();
+    }
+
+    public function paytableConfiguration()
+    {
+        return $this->hasOne(GameConfiguration::class)->paytable();
     }
 
     /**

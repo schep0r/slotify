@@ -16,14 +16,16 @@ class DatabaseSeeder extends Seeder
     {
         // User::factory(10)->create();
 
-//        User::factory()->create([
-//            'name' => 'Test User',
-//            'email' => 'test@example.com',
-//        ]);
+        User::factory()->create([
+            'name' => 'Test User',
+            'email' => 'admin@example.com',
+            'password' => bcrypt('admin'),
+        ]);
 
         // Run the seeders
         $this->call([
             GameSeeder::class,
+            GameConfigurationSeeder::class,
             BonusTypeSeeder::class,
         ]);
     }

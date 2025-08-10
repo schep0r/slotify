@@ -2,10 +2,12 @@
 
 namespace App\Services;
 
+use App\Models\Game;
 use App\Models\GameSession;
 use App\Models\SlotConfiguration;
 use App\Exceptions\InsufficientBalanceException;
 use App\Exceptions\InvalidBetException;
+use App\Models\Transaction;
 use App\Models\User;
 
 /**
@@ -15,25 +17,22 @@ class GameEngine
 {
     private RandomNumberGenerator $rng;
     private PayoutCalculator $payoutCalculator;
-    private array $reels;
-    private SlotConfiguration $config;
 
     public function __construct(
         RandomNumberGenerator $rng,
-        PayoutCalculator      $payoutCalculator
+        PayoutCalculator $payoutCalculator
     )
     {
         $this->rng = $rng;
         $this->payoutCalculator = $payoutCalculator;
-//        $this->loadConfiguration();
     }
 
     /**
      * Execute a spin with the given bet amount
      */
-    public function spin(float $betAmount, int $userId, array $activePaylines = null): array
+    public function spin(float $betAmount, int $userId, Game $game): array
     {
-        $this->validateBet($betAmount);
+        $this->validateBet($betAmount, $game);
         $user = $this->getUser($userId);
 
         if ($user->balance < $betAmount) {
@@ -41,16 +40,17 @@ class GameEngine
         }
 
         // Generate random positions for each reel
-        $reelPositions = $this->generateReelPositions();
+        $reelPositions = $this->generateReelPositions($game);
 
         // Get the symbols that are visible on the reels
-        $visibleSymbols = $this->getVisibleSymbols($reelPositions);
+        $visibleSymbols = $this->getVisibleSymbols($reelPositions, $game);
 
         // Calculate payouts
         $payoutResult = $this->payoutCalculator->calculatePayout(
+            $game,
             $visibleSymbols,
             $betAmount,
-            $activePaylines ?? $this->config->default_paylines
+            [0, 1, 2, 3, 4]
         );
 
         // Update user balance
@@ -75,25 +75,27 @@ class GameEngine
     /**
      * Generate random positions for each reel
      */
-    private function generateReelPositions(): array
+    private function generateReelPositions(Game $game): array
     {
         $positions = [];
-        foreach ($this->reels as $reelIndex => $reel) {
+        foreach ($game->reelsConfiguration->value as $reelIndex => $reel) {
             $positions[] = $this->rng->generateReelPosition(count($reel));
         }
+
         return $positions;
     }
 
     /**
      * Get visible symbols based on reel positions
      */
-    private function getVisibleSymbols(array $positions): array
+    private function getVisibleSymbols(array $positions, Game $game): array
     {
         $visible = [];
-        $rows = $this->config->rows;
+        $reels = $game->reelsConfiguration->value;
+        $rows = $game->rowsConfiguration->value;
 
         foreach ($positions as $reelIndex => $position) {
-            $reel = $this->reels[$reelIndex];
+            $reel = $reels[$reelIndex];
             $reelSymbols = [];
 
             for ($row = 0; $row < $rows; $row++) {
@@ -107,32 +109,10 @@ class GameEngine
         return $visible;
     }
 
-    /**
-     * Load slot machine configuration
-     */
-    private function loadConfiguration(): void
+    private function validateBet(float $betAmount, Game $game): void
     {
-        $this->config = SlotConfiguration::first();
-
-        // Default 5-reel configuration with various symbols
-        $this->reels = [
-            // Reel 1
-            ['cherry', 'lemon', 'orange', 'plum', 'bell', 'bar', 'seven', 'cherry', 'lemon', 'orange', 'plum', 'bell', 'bar', 'wild', 'scatter'],
-            // Reel 2
-            ['lemon', 'orange', 'plum', 'bell', 'bar', 'seven', 'cherry', 'lemon', 'orange', 'plum', 'bell', 'bar', 'wild', 'scatter', 'bonus'],
-            // Reel 3
-            ['orange', 'plum', 'bell', 'bar', 'seven', 'cherry', 'lemon', 'orange', 'plum', 'bell', 'bar', 'seven', 'wild', 'scatter', 'jackpot'],
-            // Reel 4
-            ['plum', 'bell', 'bar', 'seven', 'cherry', 'lemon', 'orange', 'plum', 'bell', 'bar', 'seven', 'wild', 'scatter', 'bonus', 'cherry'],
-            // Reel 5
-            ['bell', 'bar', 'seven', 'cherry', 'lemon', 'orange', 'plum', 'bell', 'bar', 'seven', 'wild', 'scatter', 'jackpot', 'bonus', 'lemon']
-        ];
-    }
-
-    private function validateBet(float $betAmount): void
-    {
-        if ($betAmount < $this->config->min_bet || $betAmount > $this->config->max_bet) {
-            throw new InvalidBetException("Bet must be between {$this->config->min_bet} and {$this->config->max_bet}");
+        if ($betAmount < $game->min_bet || $betAmount > $game->max_bet) {
+            throw new InvalidBetException("Bet must be between {$game->min_bet} and {$game->max_bet}");
         }
     }
 

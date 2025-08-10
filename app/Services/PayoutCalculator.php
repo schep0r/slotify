@@ -4,32 +4,27 @@ declare(strict_types=1);
 
 namespace App\Services;
 
-use App\Models\SlotConfiguration;
-use Illuminate\Support\Collection;
+use App\Models\Game;
 
 class PayoutCalculator
 {
-    private array $paytable;
-    private array $paylines;
-    private RandomNumberGenerator $rng;
-
-    public function __construct(RandomNumberGenerator $rng)
-    {
-        $this->rng = $rng;
-        $this->initializePaytable();
-        $this->initializePaylines();
-    }
+    private array $paytable = [];
+    private array $paylines = [];
 
     /**
      * Calculate total payout for a spin result
      */
-    public function calculatePayout(array $visibleSymbols, float $betAmount, array $activePaylines): array
-    {
+    public function calculatePayout(
+        Game $game,
+        array $visibleSymbols,
+        float $betAmount,
+        array $activePaylines
+    ): array {
         $winningLines = [];
         $totalPayout = 0;
         $isJackpot = false;
-        $multiplier = 1;
         $freeSpinsAwarded = 0;
+        $this->initConfigurations($game);
 
         // Check each active payline
         foreach ($activePaylines as $paylineIndex) {
@@ -85,8 +80,11 @@ class PayoutCalculator
     /**
      * Check a single payline for winning combinations
      */
-    private function checkPayline(array $visibleSymbols, array $payline, float $betAmount): array
-    {
+    private function checkPayline(
+        array $visibleSymbols,
+        array $payline,
+        float $betAmount
+    ): array {
         $symbols = [];
 
         // Extract symbols along the payline
@@ -194,7 +192,7 @@ class PayoutCalculator
         // Very rare jackpot combination (5 jackpot symbols on center line)
         $centerLine = [];
         foreach ($visibleSymbols as $reel) {
-            $centerLine[] = $reel[1]; // Middle row
+            $centerLine[] = $reel[3]; // Middle row
         }
 
         return count(array_filter($centerLine, fn($symbol) => $symbol === 'jackpot')) === 5;
@@ -213,56 +211,9 @@ class PayoutCalculator
         return $symbolCounts ? array_search(max($symbolCounts), $symbolCounts) : 'cherry';
     }
 
-    private function initializePaytable(): void
+    private function initConfigurations(Game $game): void
     {
-        $this->paytable = [
-            'cherry' => [3 => 5, 4 => 20, 5 => 100],
-            'lemon' => [3 => 5, 4 => 20, 5 => 100],
-            'orange' => [3 => 10, 4 => 30, 5 => 150],
-            'plum' => [3 => 10, 4 => 30, 5 => 150],
-            'bell' => [3 => 15, 4 => 50, 5 => 200],
-            'bar' => [3 => 25, 4 => 75, 5 => 300],
-            'seven' => [3 => 50, 4 => 150, 5 => 500],
-            'wild' => [3 => 100, 4 => 400, 5 => 1000],
-            'jackpot' => [3 => 500, 4 => 2000, 5 => 5000],
-            'bonus' => [3 => 25, 4 => 100, 5 => 400]
-        ];
-    }
-
-    private function initializePaylines(): void
-    {
-        // Standard 25-payline configuration (5x3 grid)
-        $this->paylines = [
-            // Horizontal lines
-            [0, 0, 0, 0, 0], // Top row
-            [1, 1, 1, 1, 1], // Middle row
-            [2, 2, 2, 2, 2], // Bottom row
-
-            // Diagonal lines
-            [0, 1, 2, 1, 0], // V shape
-            [2, 1, 0, 1, 2], // Inverted V
-
-            // Zigzag patterns
-            [0, 0, 1, 2, 2],
-            [2, 2, 1, 0, 0],
-            [1, 0, 0, 0, 1],
-            [1, 2, 2, 2, 1],
-            [0, 1, 0, 1, 0],
-            [2, 1, 2, 1, 2],
-            [1, 0, 1, 2, 1],
-            [1, 2, 1, 0, 1],
-            [0, 0, 2, 0, 0],
-            [2, 2, 0, 2, 2],
-            [0, 2, 2, 2, 0],
-            [2, 0, 0, 0, 2],
-            [1, 1, 0, 1, 1],
-            [1, 1, 2, 1, 1],
-            [0, 1, 1, 1, 0],
-            [2, 1, 1, 1, 2],
-            [0, 2, 0, 2, 0],
-            [2, 0, 2, 0, 2],
-            [1, 0, 2, 0, 1],
-            [1, 2, 0, 2, 1]
-        ];
+        $this->paylines = $game->paylinesConfiguration->value;
+        $this->paytable = $game->paytableConfiguration->value;
     }
 }
