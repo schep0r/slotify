@@ -7,7 +7,7 @@ use App\Exceptions\RngException;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 
-class RandomNumberGenerator
+class RandomNumberGenerator implements RandomNumberGeneratorInterface
 {
     private string $seed;
     private array $entropy_sources;
@@ -23,6 +23,14 @@ class RandomNumberGenerator
     public function generateReelPosition(int $reelSize): int
     {
         return $this->generateSecureRandom(0, $reelSize - 1);
+    }
+
+    /**
+     * Generate a random integer within range (interface method)
+     */
+    public function generateInt(int $min = 0, int $max = PHP_INT_MAX): int
+    {
+        return $this->generateSecureRandom($min, $max);
     }
 
     /**
@@ -59,6 +67,14 @@ class RandomNumberGenerator
     public function generateBoolean(float $trueChance = 0.5): bool
     {
         return $this->generateFloat() < $trueChance;
+    }
+
+    /**
+     * Generate weighted random selection (interface method)
+     */
+    public function generateWeighted(array $weights): int|string
+    {
+        return $this->generateWeightedRandom($weights);
     }
 
     /**
@@ -173,5 +189,83 @@ class RandomNumberGenerator
         }
 
         $this->seed = $this->generateSeed();
+    }
+
+    /**
+     * Generate slot reel positions (interface method)
+     */
+    public function generateReelPositions(int $reelCount, int $symbolsPerReel): array
+    {
+        $positions = [];
+        for ($i = 0; $i < $reelCount; $i++) {
+            $positions[] = $this->generateReelPosition($symbolsPerReel);
+        }
+        return $positions;
+    }
+
+    /**
+     * Generate bonus game random values (interface method)
+     */
+    public function generateBonusValues(array $config): array
+    {
+        $values = [];
+        foreach ($config as $key => $range) {
+            if (is_array($range) && isset($range['min'], $range['max'])) {
+                $values[$key] = $this->generateSecureRandom($range['min'], $range['max']);
+            }
+        }
+        return $values;
+    }
+
+    /**
+     * Generate sequence of numbers (interface method)
+     */
+    public function generateSequence(int $count, int $min, int $max): array
+    {
+        $sequence = [];
+        for ($i = 0; $i < $count; $i++) {
+            $sequence[] = $this->generateSecureRandom($min, $max);
+        }
+        return $sequence;
+    }
+
+    /**
+     * Validate RNG state (interface method)
+     */
+    public function validateState(): bool
+    {
+        try {
+            // Test basic functionality
+            $test = $this->generateSecureRandom(1, 100);
+            return is_int($test) && $test >= 1 && $test <= 100;
+        } catch (\Exception $e) {
+            return false;
+        }
+    }
+
+    /**
+     * Get RNG statistics (interface method)
+     */
+    public function getStatistics(): array
+    {
+        return [
+            'entropy_info' => $this->getEntropyInfo(),
+            'seed' => $this->seed,
+            'state_valid' => $this->validateState(),
+            'timestamp' => time()
+        ];
+    }
+
+    /**
+     * Reseed the generator (interface method)
+     */
+    public function reseed(?string $newSeed = null): void
+    {
+        if ($newSeed !== null) {
+            $this->seed = $newSeed;
+        } else {
+            $this->seed = $this->generateSeed();
+        }
+        $this->initializeEntropy();
     }
 }

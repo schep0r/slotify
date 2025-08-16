@@ -12,7 +12,7 @@ class GameConfiguration extends Model
 
     protected $fillable = [
         'game_id',
-        'key', // 'paylines', 'reels_count', 'rows_count', 'bonus_features', etc.
+        'key', // 'paylines', 'reels_count', 'rows_count', 'scatter_config', 'bonus_features', etc.
         'value',
         'data_type', // 'integer', 'string', 'boolean', 'json', 'decimal'
         'description',
@@ -61,5 +61,10 @@ class GameConfiguration extends Model
     public function scopePaytable($query)
     {
         return $query->where('key', GameConfigurationType::PAYTABLE->value);
+    }
+
+    public function scopeScatters($query)
+    {
+        return $query->where('key', GameConfigurationType::SCATTER_CONFIG->value);
     }
 }

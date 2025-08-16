@@ -11,4 +11,5 @@ enum GameConfigurationType: string
     case REELS = 'reels';
     case ROWS_COUNT = 'rows_count';
     case BONUS_FEATURES = 'bonus_features';
+    case SCATTER_CONFIG = 'scatter_config';
 }

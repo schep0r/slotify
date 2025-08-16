@@ -13,7 +13,12 @@ class BonusType extends Model
     use HasFactory;
 
     protected $fillable = [
-        'name', 'code', 'description', 'type', 'config', 'is_active'
+        'name',
+        'code',
+        'description',
+        'type',
+        'config',
+        'is_active',
     ];
 
     protected $casts = [

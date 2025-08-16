@@ -12,6 +12,9 @@ class GameSession extends Model
 {
     use HasFactory;
 
+    public const STATUS_ACTIVE = 'active';
+    public const STATUS_CLOSED = 'closed';
+
     /**
      * The attributes that are mass assignable.
      *

@@ -24,7 +24,7 @@ class GameSpinConsole extends Command
      *
      * @var string
      */
-    protected $signature = 'game:spin {gameId : The ID of the game to spin} {--bet=1 : Bet amount} {--user=1 : User ID}';
+    protected $signature = 'game:spin {gameId : The ID of the game to spin} {--bet=1 : Bet amount} {--user=1 : User ID} {--spins-count=100 : How many spins should be?}';
 
     /**
      * The console command description.
@@ -41,6 +41,7 @@ class GameSpinConsole extends Command
         $gameId = (int) $this->argument('gameId');
         $betAmount = (float) $this->option('bet');
         $userId = (int) $this->option('user');
+        $spinCount = (int) $this->option('spins-count') ?? 100;
 
         if ($gameId <= 0) {
             $this->error('Invalid gameId provided.');
@@ -64,7 +65,7 @@ class GameSpinConsole extends Command
         $totalBets = 0;
 
 
-        for ($i = 0; $i < 10000; $i++) {
+        for ($i = 0; $i < $spinCount; $i++) {
             // Try different known signatures due to inconsistencies in the codebase
             try {
                 // Signature variant 1 (from current GameEngine): spin(float $betAmount, int $userId, array $activePaylines = null)

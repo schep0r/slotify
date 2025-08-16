@@ -42,6 +42,11 @@ class Game extends Model
         return $this->hasOne(GameConfiguration::class)->paytable();
     }
 
+    public function scatterConfigurations()
+    {
+        return $this->hasMany(GameConfiguration::class)->scatters();
+    }
+
     /**
      * The attributes that are mass assignable.
      *
