@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Services;
+namespace App\Managers;
 
 use App\Models\User;
 use App\Models\BonusType;
@@ -12,7 +12,7 @@ use App\Models\BonusTransaction;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 
-class BonusService
+class BonusManager
 {
     /**
      * Check if user can claim a specific bonus

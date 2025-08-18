@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace App\Services;
+namespace App\Processors;
 
 /**
- * WildResultService - Handles wild symbol logic and substitutions
+ * WildResultProcessor - Handles wild symbol logic and substitutions
  */
-class WildResultService
+class WildResultProcessor
 {
     public const SYMBOL_WILD = 'wild';
 

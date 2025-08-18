@@ -2,17 +2,17 @@
 
 namespace Tests\Unit;
 
-use App\Services\WildResultService;
+use App\Processors\WildResultProcessor;
 use PHPUnit\Framework\TestCase;
 
-class WildResultServiceTest extends TestCase
+class WildResultProcessorTest extends TestCase
 {
-    private WildResultService $wildResultService;
+    private WildResultProcessor $wildResultProcessor;
 
     protected function setUp(): void
     {
         parent::setUp();
-        $this->wildResultService = new WildResultService();
+        $this->wildResultProcessor = new WildResultProcessor();
     }
 
     public function test_calculate_wild_multiplier()
@@ -23,7 +23,7 @@ class WildResultServiceTest extends TestCase
             ['lemon', 'wild', 'cherry']
         ];
 
-        $multiplier = $this->wildResultService->calculateWildMultiplier($visibleSymbols);
+        $multiplier = $this->wildResultProcessor->calculateWildMultiplier($visibleSymbols);
         
         // 4 wild symbols should give multiplier of 5 (1 + 4)
         $this->assertEquals(5, $multiplier);
@@ -33,7 +33,7 @@ class WildResultServiceTest extends TestCase
     {
         $symbols = ['wild', 'cherry', 'cherry', 'wild', 'lemon'];
         
-        $substitute = $this->wildResultService->findBestWildSubstitute($symbols);
+        $substitute = $this->wildResultProcessor->findBestWildSubstitute($symbols);
         
         // Cherry appears twice, lemon once, so cherry should be chosen
         $this->assertEquals('cherry', $substitute);
@@ -47,7 +47,7 @@ class WildResultServiceTest extends TestCase
             ['lemon', 'wild', 'cherry']
         ];
 
-        $positions = $this->wildResultService->getWildPositions($visibleSymbols);
+        $positions = $this->wildResultProcessor->getWildPositions($visibleSymbols);
         
         $expectedPositions = [
             ['reel' => 0, 'row' => 1],

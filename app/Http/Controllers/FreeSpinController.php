@@ -5,17 +5,17 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use App\Services\FreeSpinService;
+use App\Managers\FreeSpinManager;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 
 class FreeSpinController extends Controller
 {
-    protected $freeSpinService;
+    protected $freeSpinManager;
 
-    public function __construct(FreeSpinService $freeSpinService)
+    public function __construct(FreeSpinManager $freeSpinManager)
     {
-        $this->freeSpinService = $freeSpinService;
+        $this->freeSpinManager = $freeSpinManager;
     }
 
     /**
@@ -26,8 +26,8 @@ class FreeSpinController extends Controller
         $user = $request->user();
         $gameId = $request->query('game_id');
 
-        $availableSpins = $this->freeSpinService->getAvailableFreeSpins($user, $gameId);
-        $freeSpinRecords = $this->freeSpinService->getUserFreeSpins($user, $gameId);
+        $availableSpins = $this->freeSpinManager->getAvailableFreeSpins($user, $gameId);
+        $freeSpinRecords = $this->freeSpinManager->getUserFreeSpins($user, $gameId);
 
         return response()->json([
             'success' => true,
@@ -60,7 +60,7 @@ class FreeSpinController extends Controller
 
         try {
             $user = $request->user();
-            $transaction = $this->freeSpinService->useFreeSpin(
+            $transaction = $this->freeSpinManager->useFreeSpin(
                 $user,
                 $request->game_id,
                 $request->spin_result,
@@ -72,7 +72,7 @@ class FreeSpinController extends Controller
                 'data' => [
                     'transaction_id' => $transaction->id,
                     'win_amount' => $transaction->win_amount,
-                    'remaining_spins' => $this->freeSpinService->getAvailableFreeSpins($user, $request->game_id),
+                    'remaining_spins' => $this->freeSpinManager->getAvailableFreeSpins($user, $request->game_id),
                     'new_balance' => $user->fresh()->balance
                 ]
             ]);
@@ -90,7 +90,7 @@ class FreeSpinController extends Controller
     public function getStats(Request $request): JsonResponse
     {
         $user = $request->user();
-        $stats = $this->freeSpinService->getUserFreeSpinStats($user);
+        $stats = $this->freeSpinManager->getUserFreeSpinStats($user);
 
         return response()->json([
             'success' => true,
@@ -116,7 +116,7 @@ class FreeSpinController extends Controller
         $expiresAt = $request->expires_in_days ?
             now()->addDays($request->expires_in_days) : null;
 
-        $freeSpin = $this->freeSpinService->awardFreeSpins(
+        $freeSpin = $this->freeSpinManager->awardFreeSpins(
             $user,
             $request->amount,
             $request->source,

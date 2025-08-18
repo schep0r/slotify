@@ -3,18 +3,18 @@
 namespace Tests\Unit;
 
 use App\Models\Game;
-use App\Services\ScatterResultService;
+use App\Processors\ScatterResultProcessor;
 use PHPUnit\Framework\TestCase;
 
-class ScatterResultServiceTest extends TestCase
+class ScatterResultProcessorTest extends TestCase
 {
-    private ScatterResultService $scatterResultService;
+    private ScatterResultProcessor $scatterResultProcessor;
     private Game $game;
 
     protected function setUp(): void
     {
         parent::setUp();
-        $this->scatterResultService = new ScatterResultService();
+        $this->scatterResultProcessor = new ScatterResultProcessor();
 
         // Create a stub Game with scatter configuration compatible with the service
         $scatterConfigRecord = new class {
@@ -61,7 +61,7 @@ class ScatterResultServiceTest extends TestCase
             ['scatter', 'wild', 'cherry']
         ];
 
-        $count = $this->scatterResultService->countScatterSymbols($visibleSymbols, 'scatter');
+        $count = $this->scatterResultProcessor->countScatterSymbols($visibleSymbols, 'scatter');
 
         $this->assertEquals(3, $count);
     }
@@ -74,7 +74,7 @@ class ScatterResultServiceTest extends TestCase
             ['scatter', 'wild', 'cherry']
         ];
 
-        $result = $this->scatterResultService->checkScatterBonus($this->game, $visibleSymbols, 10.0);
+        $result = $this->scatterResultProcessor->checkScatterBonus($this->game, $visibleSymbols, 10.0);
 
         // With config: 3 scatters pay 2x bet; freeSpins are not calculated in checkScatterBonus anymore
         $this->assertEquals(20.0, $result['payout']);
@@ -100,7 +100,7 @@ class ScatterResultServiceTest extends TestCase
             ['lemon', 'wild', 'cherry']
         ];
 
-        $result = $this->scatterResultService->checkScatterBonus($this->game, $visibleSymbols, 10.0);
+        $result = $this->scatterResultProcessor->checkScatterBonus($this->game, $visibleSymbols, 10.0);
 
         $this->assertEquals(0, $result['payout']);
         $this->assertEquals(0, $result['freeSpins']);
@@ -122,7 +122,7 @@ class ScatterResultServiceTest extends TestCase
             ['scatter', 'wild', 'cherry']
         ];
 
-        $positions = $this->scatterResultService->getScatterPositions($visibleSymbols, 'scatter');
+        $positions = $this->scatterResultProcessor->getScatterPositions($visibleSymbols, 'scatter');
 
         $expectedPositions = [
             ['reel' => 0, 'row' => 1],

@@ -2,15 +2,16 @@
 
 declare(strict_types=1);
 
-namespace App\Services;
+namespace App\Loggers;
 
 use App\Contracts\GameLoggerInterface;
 use App\Models\GameSession;
+use App\Managers\GameRoundManager;
 
 class GameLogger implements GameLoggerInterface
 {
     public function __construct(
-        private GameRoundService $gameRoundService
+        private GameRoundManager $gameRoundManager
     ) {}
 
     public function logGameRound(
@@ -28,6 +29,6 @@ class GameLogger implements GameLoggerInterface
             ]
         );
 
-        $this->gameRoundService->processSpin($gameSession, $spinData);
+        $this->gameRoundManager->processSpin($gameSession, $spinData);
     }
 }

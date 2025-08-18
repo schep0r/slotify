@@ -5,17 +5,17 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Models\BonusType;
-use App\Services\BonusService;
+use App\Managers\BonusManager;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 
 class BonusController extends Controller
 {
-    protected BonusService $bonusService;
+    protected BonusManager $bonusManager;
 
-    public function __construct(BonusService $bonusService)
+    public function __construct(BonusManager $bonusManager)
     {
-        $this->bonusService = $bonusService;
+        $this->bonusManager = $bonusManager;
     }
 
     /**
@@ -29,7 +29,7 @@ class BonusController extends Controller
         $availableBonuses = [];
 
         foreach ($bonusTypes as $bonusType) {
-            $canClaim = $this->bonusService->canClaimBonus($user, $bonusType);
+            $canClaim = $this->bonusManager->canClaimBonus($user, $bonusType);
 
             $availableBonuses[] = [
                 'id' => $bonusType->id,
@@ -62,7 +62,7 @@ class BonusController extends Controller
         $bonusType = BonusType::findOrFail($bonusTypeId);
 
         try {
-            $userBonus = $this->bonusService->claimBonus(
+            $userBonus = $this->bonusManager->claimBonus(
                 $user,
                 $bonusType,
                 $request->ip()
@@ -96,7 +96,7 @@ class BonusController extends Controller
     public function getActiveBonus(Request $request): JsonResponse
     {
         $user = $request->user();
-        $activeBonus = $this->bonusService->getActiveBonusForUser($user);
+        $activeBonus = $this->bonusManager->getActiveBonusForUser($user);
 
         if (!$activeBonus) {
             return response()->json([
@@ -132,7 +132,7 @@ class BonusController extends Controller
         $user = $request->user();
         $limit = $request->input('limit', 20);
 
-        $history = $this->bonusService->getUserBonusHistory($user, $limit);
+        $history = $this->bonusManager->getUserBonusHistory($user, $limit);
 
         return response()->json([
             'success' => true,
@@ -158,7 +158,7 @@ class BonusController extends Controller
         $gameResult = $request->input('game_result');
 
         try {
-            $bonusResult = $this->bonusService->useBonusForSpin($user, $betAmount, $gameResult);
+            $bonusResult = $this->bonusManager->useBonusForSpin($user, $betAmount, $gameResult);
 
             return response()->json([
                 'success' => true,

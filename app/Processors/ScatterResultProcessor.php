@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace App\Services;
+namespace App\Processors;
 
 use App\Models\Game;
 
 /**
- * ScatterResultService - Handles scatter symbol logic and bonuses
+ * ScatterResultProcessor - Handles scatter symbol logic and bonuses
  */
-class ScatterResultService
+class ScatterResultProcessor
 {
     /**
      * Check for scatter symbol bonuses

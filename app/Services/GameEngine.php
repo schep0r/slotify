@@ -11,6 +11,7 @@ use App\Contracts\ReelGeneratorInterface;
 use App\Contracts\TransactionManagerInterface;
 use App\Models\Game;
 use App\Models\User;
+use App\Managers\GameSessionManager;
 
 /**
  * GameEngine - Orchestrates the main game flow following SOLID principles
@@ -29,7 +30,7 @@ class GameEngine
         private PayoutCalculatorInterface $payoutCalculator,
         private TransactionManagerInterface $transactionManager,
         private GameLoggerInterface $gameLogger,
-        private GameSessionService $gameSessionService
+        private GameSessionManager $gameSessionManager
     ) {}
 
     /**
@@ -44,7 +45,7 @@ class GameEngine
         $this->betValidator->validate($game, $user, $betAmount);
 
         // Step 2: Get or create game session
-        $gameSession = $this->gameSessionService->getOrCreateUserSession($user, $game);
+        $gameSession = $this->gameSessionManager->getOrCreateUserSession($user, $game);
 
         // Step 3: Generate reel results
         $spinResult = $this->reelGenerator->getVisibleSymbols($game);

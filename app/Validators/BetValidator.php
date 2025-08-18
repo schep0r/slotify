@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Services;
+namespace App\Validators;
 
 use App\Contracts\BetValidatorInterface;
 use App\Exceptions\InsufficientBalanceException;

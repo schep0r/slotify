@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Services;
+namespace App\Managers;
 
 use App\Models\FreeSpin;
 use App\Models\FreeSpinTransaction;
@@ -11,7 +11,7 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Exception;
 
-class FreeSpinService
+class FreeSpinManager
 {
     /**
      * Award free spins to a user

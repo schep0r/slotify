@@ -17,12 +17,29 @@
 
 ### Key Services (`app/Services/`)
 - **GameEngine**: Main slot machine logic and spin processing
+
+### Managers (`app/Managers/`)
+- **GameSessionManager**: Manages player game sessions
+- **GameRoundManager**: Handles individual spin rounds
+- **BonusManager**: Manages bonus mechanics and free spins
+- **FreeSpinManager**: Free spin allocation and usage
+- **TransactionManager**: Handles financial transactions
+
+### Processors (`app/Processors/`)
 - **PayoutCalculator**: Calculates winnings based on game rules
+- **ScatterResultProcessor**: Handles scatter symbol logic and bonuses
+- **WildResultProcessor**: Handles wild symbol logic and substitutions
+- **JackpotProcessor**: Manages jackpot calculations
+
+### Validators (`app/Validators/`)
+- **BetValidator**: Validates betting amounts and user balance
+
+### Generators (`app/Generators/`)
 - **RandomNumberGenerator**: RNG implementation for fair gameplay
-- **GameSessionService**: Manages player game sessions
-- **GameRoundService**: Handles individual spin rounds
-- **BonusService**: Manages bonus mechanics and free spins
-- **FreeSpinService**: Free spin allocation and usage
+- **ReelGenerator**: Generates reel positions and visible symbols
+
+### Loggers (`app/Loggers/`)
+- **GameLogger**: Logs game rounds and activities
 
 ### Admin Interface (`app/Filament/`)
 - **Resources/**: Filament admin resources for CRUD operations

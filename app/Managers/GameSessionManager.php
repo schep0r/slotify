@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace App\Services;
+namespace App\Managers;
 
 use App\Models\Game;
 use App\Models\GameSession;
 use App\Models\User;
 use Illuminate\Support\Str;
 
-class GameSessionService
+class GameSessionManager
 {
     public const  SESSION_LIFETIME = 86400;
 

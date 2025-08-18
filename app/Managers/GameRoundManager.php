@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services;
+namespace App\Managers;
 
 use App\Models\GameRound;
 use App\Models\GameSession;
@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Exception;
 
-class GameRoundService
+class GameRoundManager
 {
     /**
      * Process a slot spin and create game round

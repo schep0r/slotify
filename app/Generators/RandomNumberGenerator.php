@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services;
+namespace App\Generators;
 
 use App\Contracts\RandomNumberGeneratorInterface;
 use App\Exceptions\RngException;

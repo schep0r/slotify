@@ -6,25 +6,25 @@ namespace App\Processors;
 
 use App\Contracts\PayoutCalculatorInterface;
 use App\Models\Game;
-use App\Services\WildResultService;
-use App\Services\ScatterResultService;
+use App\Processors\WildResultProcessor;
+use App\Processors\ScatterResultProcessor;
 use App\Processors\JackpotProcessor;
 
 class PayoutProcessor implements PayoutCalculatorInterface
 {
     private array $paytable = [];
     private array $paylines = [];
-    private WildResultService $wildResultService;
-    private ScatterResultService $scatterResultService;
+    private WildResultProcessor $wildResultProcessor;
+    private ScatterResultProcessor $scatterResultProcessor;
     private JackpotProcessor $jackpotProcessor;
 
     public function __construct(
-        WildResultService $wildResultService,
-        ScatterResultService $scatterResultService,
+        WildResultProcessor $wildResultProcessor,
+        ScatterResultProcessor $scatterResultProcessor,
         JackpotProcessor $jackpotProcessor
     ) {
-        $this->wildResultService = $wildResultService;
-        $this->scatterResultService = $scatterResultService;
+        $this->wildResultProcessor = $wildResultProcessor;
+        $this->scatterResultProcessor = $scatterResultProcessor;
         $this->jackpotProcessor = $jackpotProcessor;
     }
 
@@ -64,14 +64,14 @@ class PayoutProcessor implements PayoutCalculatorInterface
         }
 
         // Check for scatter bonuses using dedicated service
-        $scatterResult = $this->scatterResultService->checkScatterBonus($game, $visibleSymbols, $betAmount);
+        $scatterResult = $this->scatterResultProcessor->checkScatterBonus($game, $visibleSymbols, $betAmount);
         if ($scatterResult['payout'] > 0) {
             $totalPayout += $scatterResult['payout'];
             $freeSpinsAwarded = $scatterResult['freeSpins'];
         }
 
         // Apply wild multipliers using dedicated service
-//        $multiplier = $this->wildResultService->calculateWildMultiplier($visibleSymbols);
+//        $multiplier = $this->wildResultProcessor->calculateWildMultiplier($visibleSymbols);
 //        $totalPayout *= $multiplier;
 
         // Progressive jackpot check via dedicated processor
@@ -88,7 +88,7 @@ class PayoutProcessor implements PayoutCalculatorInterface
 //            'multiplier' => $multiplier,
             'freeSpinsAwarded' => $freeSpinsAwarded,
             'scatterResult' => $scatterResult,
-            'wildPositions' => $this->wildResultService->getWildPositions($visibleSymbols)
+            'wildPositions' => $this->wildResultProcessor->getWildPositions($visibleSymbols)
         ];
     }
 
@@ -113,16 +113,16 @@ class PayoutProcessor implements PayoutCalculatorInterface
 
         // Check for winning combinations (left to right)
         $firstSymbol = $symbols[0];
-        if ($firstSymbol === WildResultService::SYMBOL_WILD) {
+        if ($firstSymbol === WildResultProcessor::SYMBOL_WILD) {
             // Handle wild as first symbol using wild service
-            $firstSymbol = $this->wildResultService->findBestWildSubstitute($symbols);
+            $firstSymbol = $this->wildResultProcessor->findBestWildSubstitute($symbols);
         }
 
         $consecutiveCount = 1;
         for ($i = 1; $i < count($symbols); $i++) {
             $currentSymbol = $symbols[$i];
 
-            if ($currentSymbol === $firstSymbol || $currentSymbol === WildResultService::SYMBOL_WILD) {
+            if ($currentSymbol === $firstSymbol || $currentSymbol === WildResultProcessor::SYMBOL_WILD) {
                 $consecutiveCount++;
             } else {
                 break;
@@ -136,7 +136,7 @@ class PayoutProcessor implements PayoutCalculatorInterface
             $basePayout = $this->paytable[$firstSymbol][$consecutiveCount];
 
             // Calculate wild contribution for this payline
-            $wildContribution = $this->wildResultService->calculateWildContribution(
+            $wildContribution = $this->wildResultProcessor->calculateWildContribution(
                 $symbols,
                 $this->paytable,
                 $betAmount / count($this->paylines)
