@@ -30,12 +30,12 @@ use InvalidArgumentException;
 class SlotGameEngine implements GameEngineInterface
 {
     public function __construct(
-        private BetValidatorInterface $betValidator,
-        private ReelGeneratorInterface $reelGenerator,
-        private PayoutCalculatorInterface $payoutCalculator,
-        private TransactionManagerInterface $transactionManager,
-        private GameLoggerInterface $gameLogger,
-        private GameSessionManager $gameSessionManager
+        private readonly BetValidatorInterface $betValidator,
+        private readonly ReelGeneratorInterface $reelGenerator,
+        private readonly PayoutCalculatorInterface $payoutCalculator,
+        private readonly TransactionManagerInterface $transactionManager,
+        private readonly GameLoggerInterface $gameLogger,
+        private readonly GameSessionManager $gameSessionManager
     ) {}
 
     /**
@@ -66,11 +66,11 @@ class SlotGameEngine implements GameEngineInterface
         );
 
         // Step 5: Process transactions
-        $newBalance = $this->transactionManager->processSpinTransaction(
+        $newBalance = $this->transactionManager->processGameTransaction(
             $user,
             $gameSession,
             $betAmount,
-            $payoutResult
+            $payoutResult['totalPayout']
         );
 
         // Step 6: Log game round

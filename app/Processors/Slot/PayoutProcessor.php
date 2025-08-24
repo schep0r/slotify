@@ -2,13 +2,10 @@
 
 declare(strict_types=1);
 
-namespace App\Processors;
+namespace App\Processors\Slot;
 
 use App\Contracts\PayoutCalculatorInterface;
 use App\Models\Game;
-use App\Processors\WildResultProcessor;
-use App\Processors\ScatterResultProcessor;
-use App\Processors\JackpotProcessor;
 
 class PayoutProcessor implements PayoutCalculatorInterface
 {

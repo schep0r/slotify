@@ -1,50 +1,57 @@
 # Project Structure
 
-## Laravel Application Structure
+## Laravel Casino Application Structure
 
 ### Core Application (`app/`)
-- **Console/Commands/**: Artisan commands for game maintenance and cleanup
-- **Contracts/**: Interfaces for game engine and RNG components
-- **Enums/**: Game configuration type enumerations
+- **Console/Commands/**: Artisan commands for casino game maintenance and cleanup
+- **Contracts/**: Interfaces for game engines, RNG components, and casino services
+- **DTOs/**: Data Transfer Objects for structured game responses
+- **Engines/**: Game engine implementations for different casino games
+- **Enums/**: Game type and configuration enumerations
 - **Events/**: Game result events for real-time updates
 - **Exceptions/**: Custom exceptions (InsufficientBalance, InvalidBet, RNG)
 - **Http/**: Controllers, middleware, and request validation
-  - **Controllers/**: API and web controllers (Auth, Game, User, Transaction)
-  - **Middleware/**: Game-specific middleware (BalanceCheck, GameSession, SpinRateLimit)
+  - **Controllers/**: API and web controllers (Auth, Game, User, Transaction, Universal)
+  - **Middleware/**: Casino-specific middleware (BalanceCheck, GameSession, SpinRateLimit)
   - **Requests/**: Form request validation classes
-- **Models/**: Eloquent models for all entities
-- **Services/**: Core business logic services
+- **Models/**: Eloquent models for all casino entities
+- **Services/**: Core casino business logic services
 
-### Key Services (`app/Services/`)
-- **GameEngine**: Main slot machine logic and spin processing
+### Game Engines (`app/Engines/`)
+- **SlotGameEngine**: Slot machine game logic and spin processing
+- **RouletteGameEngine**: Roulette game logic and betting system
+- **Future engines**: Blackjack, Poker, Baccarat (planned)
 
 ### Managers (`app/Managers/`)
-- **GameSessionManager**: Manages player game sessions
-- **GameRoundManager**: Handles individual spin rounds
-- **BonusManager**: Manages bonus mechanics and free spins
-- **FreeSpinManager**: Free spin allocation and usage
-- **TransactionManager**: Handles financial transactions
+- **GameSessionManager**: Manages player casino game sessions
+- **GameRoundManager**: Handles individual game rounds across all casino games
+- **BonusManager**: Manages bonus mechanics and promotional features
+- **FreeSpinManager**: Free spin allocation and usage for slot games
+- **TransactionManager**: Handles all casino financial transactions
 
 ### Processors (`app/Processors/`)
-- **PayoutCalculator**: Calculates winnings based on game rules
-- **ScatterResultProcessor**: Handles scatter symbol logic and bonuses
-- **WildResultProcessor**: Handles wild symbol logic and substitutions
-- **JackpotProcessor**: Manages jackpot calculations
+- **GameProcessor**: Universal game processor for all casino games
+- **PayoutProcessor**: Calculates winnings based on game-specific rules
+- **ScatterResultProcessor**: Handles scatter symbol logic for slot games
+- **WildResultProcessor**: Handles wild symbol logic for slot games
+- **JackpotProcessor**: Manages progressive and fixed jackpot calculations
 
 ### Validators (`app/Validators/`)
-- **BetValidator**: Validates betting amounts and user balance
+- **BetValidator**: Validates betting amounts and user balance across all games
 
 ### Generators (`app/Generators/`)
-- **RandomNumberGenerator**: RNG implementation for fair gameplay
-- **ReelGenerator**: Generates reel positions and visible symbols
+- **RandomNumberGenerator**: RNG implementation for fair casino gameplay
+- **ReelGenerator**: Generates reel positions and visible symbols for slots
+- **RouletteWheelGenerator**: Generates roulette wheel results
 
 ### Loggers (`app/Loggers/`)
-- **GameLogger**: Logs game rounds and activities
+- **GameLogger**: Logs all casino game rounds and activities
 
 ### Admin Interface (`app/Filament/`)
-- **Resources/**: Filament admin resources for CRUD operations
-  - BonusTypeResource, GameResource, TransactionResource, UserResource
-- **Pages/**: Custom admin pages for each resource
+- **Resources/**: Filament admin resources for casino management
+  - GameResource, UserResource, TransactionResource, BonusTypeResource
+  - SlotConfigurationResource, RouletteConfigurationResource
+- **Pages/**: Custom admin pages for casino operations and analytics
 
 ### Database (`database/`)
 - **migrations/**: Database schema definitions
@@ -52,28 +59,34 @@
 - **factories/**: Model factories for testing
 
 ### Frontend (`resources/`)
-- **js/**: Vue.js application
+- **js/**: Vue.js casino application
   - **components/**: Reusable Vue components
-    - **Game/**: Game-specific components
-    - **SlotMachine/**: Slot machine UI components
+    - **Games/**: Casino game-specific components
+      - **Slots/**: Slot machine UI components
+      - **Roulette/**: Roulette game UI components
+      - **Common/**: Shared game components
+    - **Casino/**: Casino lobby and navigation components
     - **UI/**: Generic UI components
-  - **composables/**: Vue composition functions
-  - **stores/**: Pinia state management
-  - **views/**: Page-level Vue components
-  - **utils/**: Utility functions and API client
-- **css/**: Tailwind CSS styles
+  - **composables/**: Vue composition functions for casino features
+  - **stores/**: Pinia state management for casino data
+  - **views/**: Page-level Vue components for casino sections
+  - **utils/**: Utility functions and casino API client
+- **css/**: Tailwind CSS styles for casino theme
 - **views/**: Blade templates (minimal, mostly SPA)
 
 ### Configuration (`config/`)
+- **casino.php**: Casino-wide configuration (game limits, RTP settings, security)
 - **game.php**: Game-specific configuration (timeouts, limits, logging)
 - Standard Laravel config files (app, auth, database, etc.)
 
 ## Naming Conventions
 
 ### PHP Classes
-- **Models**: Singular PascalCase (`Game`, `User`, `GameSession`)
-- **Services**: Descriptive names ending in `Service` (`GameEngine`, `PayoutCalculator`)
-- **Controllers**: Resource-based with `Controller` suffix (`GameController`)
+- **Models**: Singular PascalCase (`Game`, `User`, `GameSession`, `RouletteConfiguration`)
+- **Engines**: Game type with `Engine` suffix (`SlotGameEngine`, `RouletteGameEngine`)
+- **DTOs**: Data structure with `Dto` suffix (`GameResultDto`, `SlotGameDataDto`)
+- **Services**: Descriptive names ending in `Service` (`PayoutCalculator`, `TransactionManager`)
+- **Controllers**: Resource-based with `Controller` suffix (`GameController`, `UniversalGameController`)
 - **Exceptions**: Descriptive with `Exception` suffix (`InsufficientBalanceException`)
 
 ### Database

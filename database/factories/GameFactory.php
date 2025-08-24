@@ -21,7 +21,7 @@ class GameFactory extends Factory
             'slug' => $this->faker->slug(),
             'provider' => 'lotto649',
             'status' => 'active',
-            'type' => $this->faker->randomElement(['classic', 'video', 'progressive']),
+            'type' => $this->faker->randomElement(['slot']),
             'min_bet' => $this->faker->randomFloat(2, 0.1, 5),
             'max_bet' => $this->faker->randomFloat(2, 10, 100),
             'reels' => $this->faker->numberBetween(3, 7),

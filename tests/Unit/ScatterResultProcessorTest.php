@@ -3,7 +3,7 @@
 namespace Tests\Unit;
 
 use App\Models\Game;
-use App\Processors\ScatterResultProcessor;
+use App\Processors\Slot\ScatterResultProcessor;
 use PHPUnit\Framework\TestCase;
 
 class ScatterResultProcessorTest extends TestCase

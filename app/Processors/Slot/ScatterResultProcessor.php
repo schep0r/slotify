@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Processors;
+namespace App\Processors\Slot;
 
 use App\Models\Game;
 

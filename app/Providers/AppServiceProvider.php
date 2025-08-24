@@ -12,9 +12,9 @@ class AppServiceProvider extends ServiceProvider
     public function register(): void
     {
         // Register game-related services
-        $this->app->singleton(\App\Processors\WildResultProcessor::class);
-        $this->app->singleton(\App\Processors\ScatterResultProcessor::class);
-        $this->app->singleton(\App\Processors\JackpotProcessor::class);
+        $this->app->singleton(\App\Processors\Slot\WildResultProcessor::class);
+        $this->app->singleton(\App\Processors\Slot\ScatterResultProcessor::class);
+        $this->app->singleton(\App\Processors\Slot\JackpotProcessor::class);
 
         // Register interfaces with their implementations
         $this->app->bind(
@@ -24,7 +24,7 @@ class AppServiceProvider extends ServiceProvider
 
         $this->app->bind(
             \App\Contracts\PayoutCalculatorInterface::class,
-            \App\Processors\PayoutProcessor::class
+            \App\Processors\Slot\PayoutProcessor::class
         );
 
         $this->app->bind(
