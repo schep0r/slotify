@@ -43,4 +43,41 @@ class TransactionManager implements TransactionManagerInterface
 
         return $newBalance;
     }
+
+    public function processGameTransaction(
+        User $user,
+        GameSession $gameSession,
+        float $betAmount,
+        float $winAmount
+    ): float {
+        $newBalance = $user->balance - $betAmount + $winAmount;
+
+        // Create bet transaction
+        if ($betAmount > 0) {
+            Transaction::createBet(
+                $user->id,
+                $gameSession->id,
+                $betAmount,
+                $user->balance,
+                $user->balance - $betAmount,
+                ['game_type' => $gameSession->game->type->value]
+            );
+        }
+
+        // Create win transaction if there's a win
+        if ($winAmount > 0) {
+            Transaction::createWin(
+                $user->id,
+                $gameSession->id,
+                $winAmount,
+                $user->balance - $betAmount,
+                $newBalance,
+                ['game_type' => $gameSession->game->type->value]
+            );
+        }
+
+        $user->update(['balance' => $newBalance]);
+
+        return $newBalance;
+    }
 }

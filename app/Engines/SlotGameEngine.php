@@ -2,16 +2,19 @@
 
 declare(strict_types=1);
 
-namespace App\Services;
+namespace App\Engines;
 
 use App\Contracts\BetValidatorInterface;
+use App\Contracts\GameEngineInterface;
 use App\Contracts\GameLoggerInterface;
 use App\Contracts\PayoutCalculatorInterface;
 use App\Contracts\ReelGeneratorInterface;
 use App\Contracts\TransactionManagerInterface;
+use App\Enums\GameType;
+use App\Managers\GameSessionManager;
 use App\Models\Game;
 use App\Models\User;
-use App\Managers\GameSessionManager;
+use InvalidArgumentException;
 
 /**
  * GameEngine - Orchestrates the main game flow following SOLID principles
@@ -22,7 +25,7 @@ use App\Managers\GameSessionManager;
  * Interface Segregation: Each dependency has focused interface
  * Dependency Inversion: Depends on abstractions, not concretions
  */
-class GameEngine
+class SlotGameEngine implements GameEngineInterface
 {
     public function __construct(
         private BetValidatorInterface $betValidator,
@@ -38,10 +41,11 @@ class GameEngine
      *
      * Main orchestration method that coordinates all game steps
      */
-    public function spin(float $betAmount, int $userId, Game $game, ?array $activePaylines = null): array
+    public function play(User $user, Game $game, array $gameData): array
     {
+        $betAmount = $gameData['betAmount'];
+
         // Step 1: Validate bet and user
-        $user = $this->getUser($userId);
         $this->betValidator->validate($game, $user, $betAmount);
 
         // Step 2: Get or create game session
@@ -92,16 +96,61 @@ class GameEngine
         float $newBalance
     ): array {
         return [
-            'reelPositions' => $reelPositions,
-            'visibleSymbols' => $visibleSymbols,
-            'winningLines' => $payoutResult['winningLines'],
-            'totalPayout' => $payoutResult['totalPayout'],
+            'gameType' => $this->getGameType(),
+            'betAmount' => $payoutResult['betAmount'],
+            'winAmount' => $payoutResult['totalPayout'],
             'newBalance' => $newBalance,
-            'isJackpot' => $payoutResult['isJackpot'] ?? false,
-            'multiplier' => $payoutResult['multiplier'] ?? 1,
-            'freeSpinsAwarded' => $payoutResult['freeSpinsAwarded'] ?? 0,
-            'scatterResult' => $payoutResult['scatterResult'] ?? [],
-            'wildPositions' => $payoutResult['wildPositions'] ?? []
+            'gameData' => [
+                'betAmount' => $payoutResult['betAmount'],
+                'winAmount' => $payoutResult['totalPayout'],
+                'gameData' => [
+                    'reelPositions' => $reelPositions,
+                    'visibleSymbols' => $visibleSymbols,
+                    'winningLines' => $payoutResult['winningLines'],
+                    'isJackpot' => $payoutResult['isJackpot'] ?? false,
+                    'multiplier' => $payoutResult['multiplier'] ?? 1,
+                    'freeSpinsAwarded' => $payoutResult['freeSpinsAwarded'] ?? 0,
+                    'scatterResult' => $payoutResult['scatterResult'] ?? [],
+                    'wildPositions' => $payoutResult['wildPositions'] ?? []
+                ]
+            ],
+        ];
+    }
+
+    public function getGameType(): string
+    {
+        return GameType::SLOT->value;
+    }
+
+    public function validateInput(array $gameData, Game $game, User $user): void
+    {
+        $activePaylines = $gameData['activePaylines'] ?? [0];
+        $maxPaylines = count($game->paylinesConfiguration->value ?? []);
+
+        foreach ($activePaylines as $payline) {
+            if ($payline >= $maxPaylines) {
+                throw new InvalidArgumentException("Invalid payline: {$payline}");
+            }
+        }
+    }
+
+    public function getRequiredInputs(): array
+    {
+        return [
+            'betAmount' => 'required|numeric|min:0.01',
+            'activePaylines' => 'array|nullable',
+            'useFreeSpins' => 'boolean|nullable',
+        ];
+    }
+
+    public function getConfigurationRequirements(): array
+    {
+        return [
+            'reels' => 'required|array',
+            'rows' => 'required|integer|min:1',
+            'paylines' => 'required|array',
+            'paytable' => 'required|array',
+            'rtp' => 'required|numeric|between:80,99',
         ];
     }
 }

@@ -82,6 +82,7 @@ class PayoutProcessor implements PayoutCalculatorInterface
         }
 
         return [
+            'betAmount' => $betAmount,
             'winningLines' => $winningLines,
             'totalPayout' => round($totalPayout, 2),
             'isJackpot' => $isJackpot,

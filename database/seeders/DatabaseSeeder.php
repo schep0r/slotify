@@ -26,6 +26,7 @@ class DatabaseSeeder extends Seeder
         $this->call([
             GameSeeder::class,
             GameConfigurationSeeder::class,
+            RouletteConfigurationSeeder::class,
             BonusTypeSeeder::class,
         ]);
     }

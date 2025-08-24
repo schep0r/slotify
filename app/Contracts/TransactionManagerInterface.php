@@ -18,4 +18,14 @@ interface TransactionManagerInterface
         float $betAmount,
         array $payoutResult
     ): float;
+
+    /**
+     * Process generic game transaction
+     */
+    public function processGameTransaction(
+        User $user,
+        GameSession $gameSession,
+        float $betAmount,
+        float $winAmount
+    ): float;
 }

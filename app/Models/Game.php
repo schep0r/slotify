@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\GameType;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -77,5 +78,47 @@ class Game extends Model
         'rtp' => 'decimal:2',
         'configuration' => 'json',
         'is_active' => 'boolean',
+        'type' => GameType::class,
     ];
+
+    /**
+     * Get the game-specific configuration model
+     */
+    public function getGameConfiguration()
+    {
+        $configurationClass = $this->type->getConfigurationModel();
+        return $configurationClass::where('game_id', $this->id)->first();
+    }
+
+    /**
+     * Relationship to slot configuration
+     */
+    public function slotConfiguration()
+    {
+        return $this->hasOne(SlotConfiguration::class);
+    }
+
+    /**
+     * Relationship to roulette configuration
+     */
+    public function rouletteConfiguration()
+    {
+        return $this->hasOne(RouletteConfiguration::class);
+    }
+
+    /**
+     * Scope to filter by game type
+     */
+    public function scopeOfType($query, GameType $gameType)
+    {
+        return $query->where('type', $gameType->value);
+    }
+
+    /**
+     * Check if game is of specific type
+     */
+    public function isType(GameType $gameType): bool
+    {
+        return $this->type === $gameType;
+    }
 }

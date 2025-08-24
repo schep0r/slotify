@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
+use App\Http\Requests\PlayGameRequest;
 use App\Models\Game;
-use App\Services\GameEngine;
+use App\Models\User;
+use App\Processors\GameProcessor;
 use Illuminate\Console\Command;
 use Throwable;
 
-class GameSpinConsole extends Command
+class GamePlayConsole extends Command
 {
     /**
      * The name and signature of the console command.
@@ -20,28 +22,28 @@ class GameSpinConsole extends Command
      *  - --user: User ID to attribute the spin to (default: 1)
      *
      * Example:
-     *  php artisan game:spin 5 --bet=2 --user=1
+     *  php artisan game:play 5 --bet=2 --user=1 --plays-count=10
      *
      * @var string
      */
-    protected $signature = 'game:spin {gameId : The ID of the game to spin} {--bet=1 : Bet amount} {--user=1 : User ID} {--spins-count=100 : How many spins should be?}';
+    protected $signature = 'game:play {gameId : The ID of the game to spin} {--bet=1 : Bet amount} {--user=1 : User ID} {--plays-count=100 : How many plays should be?}';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Spin a specified game and display the result.';
+    protected $description = 'Play a specified game and display the result.';
 
     /**
      * Execute the console command.
      */
-    public function handle(GameEngine $gameEngine)
+    public function handle(GameProcessor $gameProcessor)
     {
         $gameId = (int) $this->argument('gameId');
         $betAmount = (float) $this->option('bet');
         $userId = (int) $this->option('user');
-        $spinCount = (int) $this->option('spins-count') ?? 100;
+        $spinCount = (int) $this->option('plays-count');
 
         if ($gameId <= 0) {
             $this->error('Invalid gameId provided.');
@@ -50,39 +52,37 @@ class GameSpinConsole extends Command
 
         // Ensure the game exists (basic validation)
         $game = Game::find($gameId);
+        $user = User::find($userId);
+
         if (!$game) {
             $this->error("Game with ID {$gameId} not found.");
             return Command::FAILURE;
         }
 
-        $this->info("Spinning game '{$game->name}' (ID: {$gameId}) with bet {$betAmount} for user {$userId}...");
+        if (!$user) {
+            $this->error("User with ID {$userId} not found.");
+            return Command::FAILURE;
+        }
 
+        $this->info("Playing game '{$game->name}' (ID: {$gameId}) with bet {$betAmount} for user {$userId}...");
+
+        $playRequest = new PlayGameRequest(['betAmount' => $betAmount]);
         $result = null;
         $errors = [];
 
-        $totalSpins = 0;
+        $totalPlays = 0;
         $totalWins = 0;
         $totalBets = 0;
 
-
         for ($i = 0; $i < $spinCount; $i++) {
-            // Try different known signatures due to inconsistencies in the codebase
             try {
-                // Signature variant 1 (from current GameEngine): spin(float $betAmount, int $userId, array $activePaylines = null)
-                $result = $gameEngine->spin($betAmount, $userId, $game);
+                $result = $gameProcessor->process($game, $user, $playRequest);
 
-                $totalSpins++;
-                $totalWins += $result['totalPayout'];
+                $totalPlays++;
+                $totalWins += $result['winAmount'] ?? 0;
                 $totalBets += $betAmount;
             } catch (Throwable $e1) {
                 $errors[] = $e1->getMessage();
-                try {
-                    // Signature variant 2 (as used by GameController): spin(int $gameId, float $betAmount)
-                    // Use call_user_func to bypass strict static signature expectations
-                    $result = call_user_func([$gameEngine, 'spin'], $gameId, $betAmount);
-                } catch (Throwable $e2) {
-                    $errors[] = $e2->getMessage();
-                }
             }
         }
 
@@ -97,7 +97,7 @@ class GameSpinConsole extends Command
         // Output result nicely
         $this->line(json_encode(
             [
-                'total_spins' => $totalSpins,
+                'total_spins' => $totalPlays,
                 'total_wins' => $totalWins,
                 'total_bets' => $totalBets,
                 'rtp' => $totalWins / $totalBets * 100,
