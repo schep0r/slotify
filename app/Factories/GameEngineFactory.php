@@ -52,10 +52,15 @@ class GameEngineFactory
         $engines = [];
 
         foreach (GameType::cases() as $gameType) {
-            $engineClass = $gameType->getEngineClass();
-
-            if (class_exists($engineClass)) {
-                $engines[$gameType->value] = $this->container->make($engineClass);
+            try {
+                $engineClass = $gameType->getEngineClass();
+                
+                if (class_exists($engineClass)) {
+                    $engines[$gameType->value] = $this->container->make($engineClass);
+                }
+            } catch (InvalidArgumentException $e) {
+                // Skip unimplemented game types
+                continue;
             }
         }
 
@@ -67,7 +72,11 @@ class GameEngineFactory
      */
     public function isGameTypeSupported(GameType $gameType): bool
     {
-        $engineClass = $gameType->getEngineClass();
-        return class_exists($engineClass);
+        try {
+            $engineClass = $gameType->getEngineClass();
+            return class_exists($engineClass);
+        } catch (InvalidArgumentException $e) {
+            return false;
+        }
     }
 }

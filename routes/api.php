@@ -38,11 +38,6 @@ Route::prefix('v1')->group(function () {
         Route::get('/{gameId}', [GameController::class, 'show']); // Game details
         Route::get('/{gameId}/config', [GameController::class, 'config']); // Game configuration
         Route::get('/{gameId}/paytable', [GameController::class, 'paytable']); // Payout table
-        
-        // Universal game routes
-        Route::get('/types', [\App\Http\Controllers\UniversalGameController::class, 'gameTypes']);
-        Route::get('/type/{gameType}', [\App\Http\Controllers\UniversalGameController::class, 'gamesByType']);
-        Route::get('/{game}/info', [\App\Http\Controllers\UniversalGameController::class, 'info']);
     });
 
     // Protected API routes (require authentication)
@@ -76,7 +71,7 @@ Route::prefix('v1')->group(function () {
             Route::post('/autoplay/start', [GameController::class, 'startAutoplay']);
             Route::post('/autoplay/stop', [GameController::class, 'stopAutoplay']);
             Route::get('/history', [GameController::class, 'gameHistory']);
-            
+
             // Universal game play
             Route::post('/{game}/play', [\App\Http\Controllers\UniversalGameController::class, 'play']);
         });

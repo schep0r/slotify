@@ -10,6 +10,8 @@ use App\Contracts\GameLoggerInterface;
 use App\Contracts\PayoutCalculatorInterface;
 use App\Contracts\ReelGeneratorInterface;
 use App\Contracts\TransactionManagerInterface;
+use App\DTOs\GameResultDto;
+use App\DTOs\SlotGameDataDto;
 use App\Enums\GameType;
 use App\Managers\GameSessionManager;
 use App\Models\Game;
@@ -41,7 +43,7 @@ class SlotGameEngine implements GameEngineInterface
      *
      * Main orchestration method that coordinates all game steps
      */
-    public function play(User $user, Game $game, array $gameData): array
+    public function play(User $user, Game $game, array $gameData): GameResultDto
     {
         $betAmount = $gameData['betAmount'];
 
@@ -79,42 +81,34 @@ class SlotGameEngine implements GameEngineInterface
     }
 
     /**
-     * Get user by ID
-     */
-    private function getUser(int $userId): User
-    {
-        return User::findOrFail($userId);
-    }
-
-    /**
-     * Build the final game result array
+     * Build the final game result DTO
      */
     private function buildGameResult(
         array $reelPositions,
         array $visibleSymbols,
         array $payoutResult,
         float $newBalance
-    ): array {
-        return [
-            'gameType' => $this->getGameType(),
-            'betAmount' => $payoutResult['betAmount'],
-            'winAmount' => $payoutResult['totalPayout'],
-            'newBalance' => $newBalance,
-            'gameData' => [
-                'betAmount' => $payoutResult['betAmount'],
-                'winAmount' => $payoutResult['totalPayout'],
-                'gameData' => [
-                    'reelPositions' => $reelPositions,
-                    'visibleSymbols' => $visibleSymbols,
-                    'winningLines' => $payoutResult['winningLines'],
-                    'isJackpot' => $payoutResult['isJackpot'] ?? false,
-                    'multiplier' => $payoutResult['multiplier'] ?? 1,
-                    'freeSpinsAwarded' => $payoutResult['freeSpinsAwarded'] ?? 0,
-                    'scatterResult' => $payoutResult['scatterResult'] ?? [],
-                    'wildPositions' => $payoutResult['wildPositions'] ?? []
-                ]
-            ],
-        ];
+    ): GameResultDto {
+        $slotGameData = new SlotGameDataDto(
+            betAmount: $payoutResult['betAmount'],
+            winAmount: $payoutResult['totalPayout'],
+            reelPositions: $reelPositions,
+            visibleSymbols: $visibleSymbols,
+            winningLines: $payoutResult['winningLines'],
+            isJackpot: $payoutResult['isJackpot'] ?? false,
+            multiplier: $payoutResult['multiplier'] ?? 1.0,
+            freeSpinsAwarded: $payoutResult['freeSpinsAwarded'] ?? 0,
+            scatterResult: $payoutResult['scatterResult'] ?? [],
+            wildPositions: $payoutResult['wildPositions'] ?? []
+        );
+
+        return new GameResultDto(
+            gameType: $this->getGameType(),
+            betAmount: $payoutResult['betAmount'],
+            winAmount: $payoutResult['totalPayout'],
+            newBalance: $newBalance,
+            gameData: $slotGameData
+        );
     }
 
     public function getGameType(): string

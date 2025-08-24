@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Processors;
 
 use App\Contracts\GameProcessorInterface;
+use App\DTOs\GameResultDto;
 use App\Factories\GameEngineFactory;
 use App\Http\Requests\PlayGameRequest;
 use App\Models\Game;
@@ -28,13 +29,13 @@ readonly class GameProcessor implements GameProcessorInterface
             $result = $gameEngine->play($user, $game, $gameData);
 
         } catch (Exception $exception) {
-            $result = [];
             DB::rollBack();
             throw $exception;
         }
 
         DB::commit();
 
-        return $result;
+        // Convert DTO to array for API response
+        return $result->toArray();
     }
 }

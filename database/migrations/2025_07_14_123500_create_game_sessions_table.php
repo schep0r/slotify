@@ -16,6 +16,7 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained();
             $table->foreignId('game_id')->constrained();
             $table->string('session_token')->unique();
+            $table->string('status')->default('active');
             $table->integer('total_spins')->default(0);
             $table->decimal('total_bet', 10, 2)->default(0.00);
             $table->decimal('total_win', 10, 2)->default(0.00);

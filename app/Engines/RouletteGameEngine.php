@@ -4,25 +4,85 @@ declare(strict_types=1);
 
 namespace App\Engines;
 
+use App\Contracts\BetValidatorInterface;
+use App\Contracts\GameEngineInterface;
+use App\Contracts\GameLoggerInterface;
 use App\Contracts\RandomNumberGeneratorInterface;
+use App\Contracts\TransactionManagerInterface;
+use App\DTOs\GameResultDto;
+use App\DTOs\RouletteBetResultDto;
+use App\DTOs\RouletteGameDataDto;
 use App\Enums\GameType;
+use App\Managers\GameSessionManager;
 use App\Models\Game;
 use App\Models\User;
 use App\Services\Games\Roulette\RoulettePayoutCalculator;
 use App\Services\Games\Roulette\RouletteWheelGenerator;
+use InvalidArgumentException;
 
-class RouletteGameEngine
+class RouletteGameEngine implements GameEngineInterface
 {
     public function __construct(
-        \App\Contracts\BetValidatorInterface $betValidator,
-        \App\Contracts\TransactionManagerInterface $transactionManager,
-        \App\Contracts\GameLoggerInterface $gameLogger,
-        \App\Managers\GameSessionManager $gameSessionManager,
+        private BetValidatorInterface $betValidator,
+        private TransactionManagerInterface $transactionManager,
+        private GameLoggerInterface $gameLogger,
+        private GameSessionManager $gameSessionManager,
         private RandomNumberGeneratorInterface $rng,
         private RoulettePayoutCalculator $payoutCalculator,
         private RouletteWheelGenerator $wheelGenerator
     ) {
-        parent::__construct($betValidator, $transactionManager, $gameLogger, $gameSessionManager);
+    }
+
+    /**
+     * Execute a roulette game round
+     */
+    public function play(User $user, Game $game, array $gameData): GameResultDto
+    {
+        // Step 1: Validate input and bets
+        $this->validateInput($gameData, $game, $user);
+        
+        $bets = $gameData['bets'];
+        $totalBetAmount = collect($bets)->sum('amount');
+
+        // Step 2: Validate total bet amount
+        $this->betValidator->validate($game, $user, $totalBetAmount);
+
+        // Step 3: Get or create game session
+        $gameSession = $this->gameSessionManager->getOrCreateUserSession($user, $game);
+
+        // Step 4: Spin the wheel
+        $winningNumber = $this->wheelGenerator->spin($game);
+
+        // Step 5: Calculate payouts for all bets
+        $totalWinAmount = 0;
+        $betResults = [];
+
+        foreach ($bets as $bet) {
+            $payout = $this->payoutCalculator->calculatePayout($bet, $winningNumber, $game);
+            $totalWinAmount += $payout;
+
+            $betResults[] = new RouletteBetResultDto(
+                type: $bet['type'],
+                amount: $bet['amount'],
+                numbers: $bet['numbers'] ?? [],
+                payout: $payout,
+                won: $payout > 0
+            );
+        }
+
+        // Step 6: Process transactions
+        $newBalance = $this->transactionManager->processSpinTransaction(
+            $user,
+            $gameSession,
+            $totalBetAmount,
+            ['totalPayout' => $totalWinAmount, 'betAmount' => $totalBetAmount]
+        );
+
+        // Step 7: Log game round
+        $this->gameLogger->logGameRound($gameSession, ['totalPayout' => $totalWinAmount], $totalBetAmount, []);
+
+        // Step 8: Return game result
+        return $this->buildGameResult($totalBetAmount, $totalWinAmount, $winningNumber, $betResults, $game, $newBalance);
     }
 
     public function getGameType(): string
@@ -63,51 +123,32 @@ class RouletteGameEngine
         }
     }
 
-    protected function executeGameLogic(array $gameData, Game $game, User $user): array
-    {
-        $bets = $gameData['bets'];
-        $totalBetAmount = collect($bets)->sum('amount');
+    /**
+     * Build the final game result DTO
+     */
+    private function buildGameResult(
+        float $totalBetAmount,
+        float $totalWinAmount,
+        int $winningNumber,
+        array $betResults,
+        Game $game,
+        float $newBalance
+    ): GameResultDto {
+        $config = $this->getGameConfiguration($game);
+        
+        $rouletteGameData = new RouletteGameDataDto(
+            winningNumber: $winningNumber,
+            bets: $betResults,
+            wheelType: $config->wheel_type ?? 'european'
+        );
 
-        // Spin the wheel
-        $winningNumber = $this->wheelGenerator->spin($game);
-
-        // Calculate payouts for all bets
-        $totalWinAmount = 0;
-        $betResults = [];
-
-        foreach ($bets as $bet) {
-            $payout = $this->payoutCalculator->calculatePayout($bet, $winningNumber, $game);
-            $totalWinAmount += $payout;
-
-            $betResults[] = [
-                'type' => $bet['type'],
-                'amount' => $bet['amount'],
-                'numbers' => $bet['numbers'] ?? [],
-                'payout' => $payout,
-                'won' => $payout > 0
-            ];
-        }
-
-        return [
-            'betAmount' => $totalBetAmount,
-            'winAmount' => $totalWinAmount,
-            'gameData' => [
-                'winningNumber' => $winningNumber,
-                'bets' => $betResults,
-                'wheelType' => $this->getGameConfiguration($game)->wheel_type
-            ]
-        ];
-    }
-
-    protected function buildGameResult(array $gameResult, float $newBalance): array
-    {
-        return [
-            'gameType' => $this->getGameType(),
-            'betAmount' => $gameResult['betAmount'],
-            'winAmount' => $gameResult['winAmount'],
-            'newBalance' => $newBalance,
-            'gameData' => $gameResult['gameData']
-        ];
+        return new GameResultDto(
+            gameType: $this->getGameType(),
+            betAmount: $totalBetAmount,
+            winAmount: $totalWinAmount,
+            newBalance: $newBalance,
+            gameData: $rouletteGameData
+        );
     }
 
     private function validateBet(array $bet, Game $game): void
@@ -122,7 +163,7 @@ class RouletteGameEngine
             $limits = $config->table_limits[$betType];
 
             if ($betAmount < $limits['min'] || $betAmount > $limits['max']) {
-                throw new \InvalidArgumentException(
+                throw new InvalidArgumentException(
                     "Bet amount {$betAmount} is outside limits for {$betType} ({$limits['min']}-{$limits['max']})"
                 );
             }
@@ -130,7 +171,12 @@ class RouletteGameEngine
 
         // Validate numbers for specific bet types
         if (in_array($betType, ['straight', 'split', 'street', 'corner', 'line']) && empty($bet['numbers'])) {
-            throw new \InvalidArgumentException("Numbers are required for {$betType} bet");
+            throw new InvalidArgumentException("Numbers are required for {$betType} bet");
         }
+    }
+
+    private function getGameConfiguration(Game $game)
+    {
+        return $game->rouletteConfiguration;
     }
 }

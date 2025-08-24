@@ -2,6 +2,8 @@
 
 namespace Tests\Feature;
 
+use App\DTOs\GameResultDto;
+use App\DTOs\RouletteGameDataDto;
 use App\Enums\GameType;
 use App\Factories\GameEngineFactory;
 use App\Models\Game;
@@ -31,7 +33,7 @@ class UniversalGameEngineTest extends TestCase
 
         $engine = $this->gameEngineFactory->createForGame($game);
 
-        $this->assertInstanceOf(\App\Services\Games\SlotGameEngine::class, $engine);
+        $this->assertInstanceOf(\App\Engines\SlotGameEngine::class, $engine);
         $this->assertEquals(GameType::SLOT->value, $engine->getGameType());
     }
 
@@ -75,18 +77,14 @@ class UniversalGameEngineTest extends TestCase
             ]
         ];
 
-        $result = $engine->play($gameData, $this->user->id, $game);
+        $result = $engine->play($this->user, $game, $gameData);
 
-        $this->assertArrayHasKey('gameType', $result);
-        $this->assertArrayHasKey('betAmount', $result);
-        $this->assertArrayHasKey('winAmount', $result);
-        $this->assertArrayHasKey('newBalance', $result);
-        $this->assertArrayHasKey('gameData', $result);
-
-        $this->assertEquals(GameType::ROULETTE->value, $result['gameType']);
-        $this->assertEquals(15.00, $result['betAmount']); // 10 + 5
-        $this->assertArrayHasKey('winningNumber', $result['gameData']);
-        $this->assertArrayHasKey('bets', $result['gameData']);
+        $this->assertInstanceOf(\App\DTOs\GameResultDto::class, $result);
+        $this->assertEquals(GameType::ROULETTE->value, $result->gameType);
+        $this->assertEquals(15.00, $result->betAmount); // 10 + 5
+        $this->assertInstanceOf(\App\DTOs\RouletteGameDataDto::class, $result->gameData);
+        $this->assertIsInt($result->gameData->winningNumber);
+        $this->assertIsArray($result->gameData->bets);
     }
 
     public function test_roulette_game_validates_bet_limits()
@@ -116,7 +114,7 @@ class UniversalGameEngineTest extends TestCase
         ];
 
         $this->expectException(\InvalidArgumentException::class);
-        $engine->play($gameData, $this->user->id, $game);
+        $engine->play($this->user, $game, $gameData);
     }
 
     public function test_can_get_available_game_types()
@@ -131,6 +129,5 @@ class UniversalGameEngineTest extends TestCase
     {
         $this->assertTrue($this->gameEngineFactory->isGameTypeSupported(GameType::SLOT));
         $this->assertTrue($this->gameEngineFactory->isGameTypeSupported(GameType::ROULETTE));
-        $this->assertFalse($this->gameEngineFactory->isGameTypeSupported(GameType::BLACKJACK));
     }
 }

@@ -33,9 +33,7 @@ enum GameType: string
         return match($this) {
             self::SLOT => SlotGameEngine::class,
             self::ROULETTE => RouletteGameEngine::class,
-//            self::BLACKJACK => \App\Services\Games\BlackjackGameEngine::class,
-//            self::POKER => \App\Services\Games\PokerGameEngine::class,
-//            self::BACCARAT => \App\Services\Games\BaccaratGameEngine::class,
+            default => throw new \InvalidArgumentException("Game engine not implemented for type: {$this->value}"),
         };
     }
 
@@ -44,9 +42,7 @@ enum GameType: string
         return match($this) {
             self::SLOT => SlotConfiguration::class,
             self::ROULETTE => RouletteConfiguration::class,
-//            self::BLACKJACK => \App\Models\BlackjackConfiguration::class,
-//            self::POKER => \App\Models\PokerConfiguration::class,
-//            self::BACCARAT => \App\Models\BaccaratConfiguration::class,
+            default => throw new \InvalidArgumentException("Configuration model not implemented for type: {$this->value}"),
         };
     }
 

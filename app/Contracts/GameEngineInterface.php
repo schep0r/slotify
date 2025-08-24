@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Contracts;
 
+use App\DTOs\GameResultDto;
 use App\Models\Game;
 use App\Models\User;
 
@@ -12,7 +13,7 @@ interface GameEngineInterface
     /**
      * Play a game round
      */
-    public function play(User $user, Game $game, array $gameData): array;
+    public function play(User $user, Game $game, array $gameData): GameResultDto;
 
     /**
      * Validate game input
