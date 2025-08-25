@@ -19,9 +19,6 @@ class BonusTypeSeeder extends Seeder
         $this->createWelcomeBonus();
         $this->createReferralBonus();
         $this->createLoyaltyBonus();
-
-        // Create 5 random bonus types
-        BonusType::factory(5)->create();
     }
 
     /**

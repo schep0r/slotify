@@ -13,9 +13,6 @@ class GameSeeder extends Seeder
      */
     public function run(): void
     {
-        // Create 20 random games
-        Game::factory()->count(20)->create();
-
         // Create some specific games
         Game::factory()->create([
             'name' => 'Lucky Sevens',
