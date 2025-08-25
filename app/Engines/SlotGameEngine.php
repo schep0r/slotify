@@ -4,111 +4,59 @@ declare(strict_types=1);
 
 namespace App\Engines;
 
-use App\Contracts\BetValidatorInterface;
 use App\Contracts\GameEngineInterface;
-use App\Contracts\GameLoggerInterface;
-use App\Contracts\PayoutCalculatorInterface;
-use App\Contracts\ReelGeneratorInterface;
-use App\Contracts\TransactionManagerInterface;
+use App\Contracts\SpinStrategyInterface;
 use App\DTOs\GameResultDto;
-use App\DTOs\SlotGameDataDto;
 use App\Enums\GameType;
-use App\Managers\GameSessionManager;
 use App\Models\Game;
 use App\Models\User;
+use App\Strategies\BetSpinStrategy;
+use App\Strategies\FreeSpinStrategy;
 use InvalidArgumentException;
 
 /**
- * GameEngine - Orchestrates the main game flow following SOLID principles
+ * SlotGameEngine - Orchestrates slot game flow using Strategy pattern
  *
- * Single Responsibility: Coordinates game spin workflow
- * Open/Closed: Extensible through dependency injection
- * Liskov Substitution: Uses interfaces for all dependencies
- * Interface Segregation: Each dependency has focused interface
- * Dependency Inversion: Depends on abstractions, not concretions
+ * Uses Strategy pattern to handle different types of spins:
+ * - BetSpinStrategy: Regular spins with bet deduction
+ * - FreeSpinStrategy: Free spins without bet deduction
  */
 class SlotGameEngine implements GameEngineInterface
 {
+    /** @var SpinStrategyInterface[] */
+    private array $strategies;
+
     public function __construct(
-        private readonly BetValidatorInterface $betValidator,
-        private readonly ReelGeneratorInterface $reelGenerator,
-        private readonly PayoutCalculatorInterface $payoutCalculator,
-        private readonly TransactionManagerInterface $transactionManager,
-        private readonly GameLoggerInterface $gameLogger,
-        private readonly GameSessionManager $gameSessionManager
-    ) {}
-
-    /**
-     * Execute a spin with the given bet amount
-     *
-     * Main orchestration method that coordinates all game steps
-     */
-    public function play(User $user, Game $game, array $gameData): GameResultDto
-    {
-        $betAmount = $gameData['betAmount'];
-
-        // Step 1: Validate bet and user
-        $this->betValidator->validate($game, $user, $betAmount);
-
-        // Step 2: Get or create game session
-        $gameSession = $this->gameSessionManager->getOrCreateUserSession($user, $game);
-
-        // Step 3: Generate reel results
-        $spinResult = $this->reelGenerator->getVisibleSymbols($game);
-        $visibleSymbols = $spinResult->symbols;
-
-        // Step 4: Calculate payouts
-        $payoutResult = $this->payoutCalculator->calculatePayout(
-            $game,
-            $visibleSymbols,
-            $betAmount,
-            $activePaylines ?? [0]
-        );
-
-        // Step 5: Process transactions
-        $newBalance = $this->transactionManager->processGameTransaction(
-            $user,
-            $gameSession,
-            $betAmount,
-            $payoutResult['totalPayout']
-        );
-
-        // Step 6: Log game round
-        $this->gameLogger->logGameRound($gameSession, $payoutResult, $betAmount, $visibleSymbols);
-
-        // Step 7: Return game result
-        return $this->buildGameResult($spinResult->positions, $visibleSymbols, $payoutResult, $newBalance);
+        BetSpinStrategy $betSpinStrategy,
+        FreeSpinStrategy $freeSpinStrategy
+    ) {
+        $this->strategies = [
+            $betSpinStrategy,
+            $freeSpinStrategy,
+        ];
     }
 
     /**
-     * Build the final game result DTO
+     * Execute a spin using the appropriate strategy
      */
-    private function buildGameResult(
-        array $reelPositions,
-        array $visibleSymbols,
-        array $payoutResult,
-        float $newBalance
-    ): GameResultDto {
-        $slotGameData = new SlotGameDataDto(
-            betAmount: $payoutResult['betAmount'],
-            winAmount: $payoutResult['totalPayout'],
-            reelPositions: $reelPositions,
-            visibleSymbols: $visibleSymbols,
-            winningLines: $payoutResult['winningLines'],
-            isJackpot: $payoutResult['isJackpot'] ?? false,
-            multiplier: $payoutResult['multiplier'] ?? 1.0,
-            freeSpinsAwarded: $payoutResult['freeSpinsAwarded'] ?? 0,
-            scatterResult: $payoutResult['scatterResult'] ?? [],
-            wildPositions: $payoutResult['wildPositions'] ?? []
-        );
+    public function play(User $user, Game $game, array $gameData): GameResultDto
+    {
+        $strategy = $this->getStrategy($gameData);
+        return $strategy->execute($user, $game, $gameData);
+    }
 
-        return new GameResultDto(
-            gameType: $this->getGameType(),
-            betAmount: $payoutResult['betAmount'],
-            winAmount: $payoutResult['totalPayout'],
-            newBalance: $newBalance,
-            gameData: $slotGameData
-        );
+    /**
+     * Get the appropriate strategy based on game data
+     */
+    private function getStrategy(array $gameData): SpinStrategyInterface
+    {
+        foreach ($this->strategies as $strategy) {
+            if ($strategy->canHandle($gameData)) {
+                return $strategy;
+            }
+        }
+
+        throw new InvalidArgumentException('No suitable strategy found for the given game data');
     }
 
     public function getGameType(): string
@@ -130,11 +78,17 @@ class SlotGameEngine implements GameEngineInterface
 
     public function getRequiredInputs(): array
     {
-        return [
-            'betAmount' => 'required|numeric|min:0.01',
+        // Merge all strategy requirements
+        $allInputs = [];
+        foreach ($this->strategies as $strategy) {
+            $allInputs = array_merge($allInputs, $strategy->getRequiredInputs());
+        }
+
+        // Add common inputs
+        return array_merge($allInputs, [
             'activePaylines' => 'array|nullable',
             'useFreeSpins' => 'boolean|nullable',
-        ];
+        ]);
     }
 
     public function getConfigurationRequirements(): array
