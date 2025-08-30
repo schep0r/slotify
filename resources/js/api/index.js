@@ -1,5 +1,8 @@
 import api from './../utils/apiClient.js'
 
+// Export auth functions
+export * from './auth.js'
+
 /**
  * Handles API errors in a consistent way
  * @param {Error} error - The error object from axios
@@ -58,4 +61,18 @@ export const getGame = (gameId) => {
       // In case handleApiError doesn't throw (which shouldn't happen)
       throw error;
     });
+};
+
+export const getGameSettings = (gameId) => {
+    if (!gameId) {
+        return Promise.reject(new Error('Game ID is required'));
+    }
+
+    return api.get(`/games/${gameId}/settings`)
+        .catch(error => {
+            // This will throw an error which will cause the promise to be rejected
+            handleApiError(error, 'Game', gameId);
+            // In case handleApiError doesn't throw (which shouldn't happen)
+            throw error;
+        });
 };

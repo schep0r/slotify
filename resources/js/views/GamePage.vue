@@ -2,6 +2,7 @@
 import { onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 import { useGameStore } from '../stores/gameStore.js';
+import { useAuthStore } from '../stores/authStore.js';
 import BalanceDisplay from '../components/UI/BalanceDisplay.vue';
 import BetControls from '../components/UI/BetControls.vue';
 import SpinButton from '../components/UI/SpinButton.vue';
@@ -17,6 +18,7 @@ const props = defineProps({
 
 const route = useRoute();
 const gameStore = useGameStore();
+const authStore = useAuthStore();
 
 const handleSpin = async () => {
     await gameStore.spin();
@@ -36,7 +38,7 @@ onMounted(() => {
         console.log(`Loading game with ID: ${gameId}`);
     }
 
-    gameStore.fetchConfiguration();
+    gameStore.fetchConfiguration(gameId);
 });
 </script>
 
@@ -48,7 +50,7 @@ onMounted(() => {
 
         <div class="bg-gray-800 bg-opacity-70 rounded-3xl p-8 shadow-2xl border-4 border-yellow-500 flex flex-col items-center space-y-8 max-w-4xl w-full">
             <!-- UI/BalanceDisplay.vue -->
-            <BalanceDisplay :balance="gameStore.balance" :freeSpins="gameStore.freeSpins" />
+            <BalanceDisplay :balance="authStore.userBalance" :freeSpins="gameStore.freeSpins" />
 
             <!-- SlotMachine/SlotMachine.vue -->
             <SlotMachine :visibleSymbols="gameStore.visibleSymbols" :winningLines="gameStore.winningLines" />

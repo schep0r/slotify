@@ -3,6 +3,7 @@ import { createApp } from 'vue';
 import router from './router';
 import { createPinia } from 'pinia'
 import App from './App.vue';
+import { useAuthStore } from './stores/authStore.js';
 
 window.axios = axios;
 window.axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
@@ -11,5 +12,10 @@ const pinia = createPinia()
 const app = createApp(App);
 
 app.use(router);
-app.use(pinia)
+app.use(pinia);
+
+// Initialize auth store after pinia is set up
+const authStore = useAuthStore();
+authStore.initializeAuth();
+
 app.mount('#app');

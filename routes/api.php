@@ -35,9 +35,8 @@ Route::prefix('v1')->group(function () {
     // Public game information (no auth required)
     Route::prefix('games')->group(function () {
         Route::get('/', [GameController::class, 'index']); // List available games
-        Route::get('/{gameId}', [GameController::class, 'show']); // Game details
-        Route::get('/{gameId}/config', [GameController::class, 'config']); // Game configuration
-        Route::get('/{gameId}/paytable', [GameController::class, 'paytable']); // Payout table
+        Route::get('/{game}', [GameController::class, 'show']); // Game details
+        Route::get('/{game}/settings', [GameController::class, 'settings']); // Game settings
     });
 
     // Protected API routes (require authentication)
@@ -46,8 +45,7 @@ Route::prefix('v1')->group(function () {
         // Authentication management
         Route::prefix('auth')->group(function () {
             Route::post('/logout', [AuthController::class, 'logout']);
-            Route::post('/refresh', [AuthController::class, 'refresh']);
-            Route::get('/user', [AuthController::class, 'user']);
+            Route::get('/me', [AuthController::class, 'me']);
         });
 
         // User management

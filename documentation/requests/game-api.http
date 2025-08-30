@@ -2,3 +2,8 @@ GET http://localhost:8000/api/v1/games
 Accept: application/json
 
 ###
+
+GET http://localhost:8000/api/v1/games/1/settings
+Accept: application/json
+
+###

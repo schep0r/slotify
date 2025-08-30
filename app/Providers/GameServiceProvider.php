@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use App\Contracts\GameEngineInterface;
+use App\Engines\SlotGameEngine;
 use Illuminate\Support\ServiceProvider;
 
 class GameServiceProvider extends ServiceProvider
@@ -11,7 +13,10 @@ class GameServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->bind(
+            GameEngineInterface::class,
+            SlotGameEngine::class
+        );
     }
 
     /**

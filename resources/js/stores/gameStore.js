@@ -1,4 +1,5 @@
 import { defineStore } from 'pinia';
+import {getGameSettings as apiGameSettings} from '../api/index.js'
 
 export const useGameStore = defineStore('game', {
     state: () => ({
@@ -6,7 +7,7 @@ export const useGameStore = defineStore('game', {
         betAmount: 10,
         freeSpins: 0,
         visibleSymbols: [
-            ['🍒', '🍋', '🍊'],
+            ['🍒', '🍋', '🍊', '🍒', '🍋', '🍊'],
             ['🍋', '🍒', '🍊'],
             ['🍊', '🍋', '🍒']
         ],
@@ -22,36 +23,26 @@ export const useGameStore = defineStore('game', {
         payouts: [] // Will also be fetched from backend
     }),
     actions: {
-        async fetchConfiguration() {
+        async fetchConfiguration(gameId) {
             this.isLoading = true;
             try {
-                // Simulate API call to backend for configuration
-                const response = await new Promise(resolve => setTimeout(() => {
-                    resolve({
-                        symbols: ['🍒', '🍋', '🍊', '🔔', '💎', '⭐', '7️⃣'],
-                        weights: {
-                            '🍒': 0.2, '🍋': 0.2, '🍊': 0.15, '🔔': 0.15, '💎': 0.1, '⭐': 0.1, '7️⃣': 0.1
-                        },
-                        payouts: [
-                            { combo: '7️⃣ 7️⃣ 7️⃣', payout: '1000x (ДЖЕКПОТ!)', value: 1000 },
-                            { combo: '⭐ ⭐ ⭐', payout: '300x', value: 300 },
-                            { combo: '💎 💎 💎', payout: '200x', value: 200 },
-                            { combo: '🔔 🔔 🔔', payout: '150x', value: 150 },
-                            { combo: '🍊 🍊 🍊', payout: '100x', value: 100 },
-                            { combo: '🍋 🍋 🍋', payout: '75x', value: 75 },
-                            { combo: '🍒 🍒 🍒', payout: '50x', value: 50 },
-                        ]
-                    });
-                }, 500)); // Simulate network delay
+                // Fetch settings from backend
+                const { data } = await apiGameSettings(gameId); // default to 1 if not provided
 
-                this.allSymbols = response.symbols;
-                this.symbolWeights = response.weights;
-                this.payouts = response.payouts;
+                // Backend returns: { success: true, payouts: [{ combo: '🍒 🍒 🍒', payout: 50 }, ...] }
+                const payouts = Array.isArray(data?.payouts) ? data.payouts : [];
+
+                // Map backend payout field name to the one used by the store/spin logic (value)
+                this.payouts = payouts.map(p => ({
+                    combo: p.combo,
+                    payout: p.payout ?? 0,
+                }));
+
                 this.message = 'Конфігурація завантажена!';
 
             } catch (error) {
                 console.error('Помилка завантаження конфігурації:', error);
-                this.message = 'Помилка завантаження конфігурації.';
+                this.message = error?.message || 'Помилка завантаження конфігурації.';
             } finally {
                 this.isLoading = false;
             }
