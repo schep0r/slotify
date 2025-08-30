@@ -12,7 +12,11 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        //
+        $middleware->alias([
+            'balance.check' => \App\Http\Middleware\BalanceCheckMiddleware::class,
+            'game.session' => \App\Http\Middleware\GameSessionMiddleware::class,
+            'spin.rate.limit' => \App\Http\Middleware\SpinRateLimitMiddleware::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

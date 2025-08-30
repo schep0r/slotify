@@ -21,7 +21,7 @@ class FreeSpinManager
         int $amount,
         string $source = 'bonus',
         ?float $betValue = null,
-        ?string $gameRestriction = null,
+        ?int $gameRestriction = null,
         ?Carbon $expiresAt = null,
         array $metadata = []
     ): FreeSpin {
@@ -39,7 +39,7 @@ class FreeSpinManager
     /**
      * Get user's available free spins for a specific game
      */
-    public function getAvailableFreeSpins(User $user, ?string $gameId = null): int
+    public function getAvailableFreeSpins(User $user, ?int $gameId = null): int
     {
         $query = FreeSpin::where('user_id', $user->id)->valid();
 

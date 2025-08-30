@@ -15,7 +15,7 @@ class BetValidator implements BetValidatorInterface
     public function validate(Game $game, User $user, float $betAmount): void
     {
         $this->validateBet($betAmount, $game);
-        $this->validateBalance($user, $betAmount);
+        // Balance validation is now handled by BalanceCheckMiddleware
     }
 
     public function validateBet(float $betAmount, Game $game): void
@@ -27,6 +27,8 @@ class BetValidator implements BetValidatorInterface
 
     public function validateBalance(User $user, float $betAmount): void
     {
+        // This method is deprecated - balance validation is now handled by BalanceCheckMiddleware
+        // Keeping for backward compatibility, but consider removing in future versions
         if ($user->balance < $betAmount) {
             throw new InsufficientBalanceException('Insufficient balance for this bet');
         }

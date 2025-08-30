@@ -21,6 +21,7 @@ interface BetValidatorInterface
 
     /**
      * Validate user has sufficient balance
+     * @deprecated Balance validation is now handled by BalanceCheckMiddleware
      */
     public function validateBalance(User $user, float $betAmount): void;
 }

@@ -92,15 +92,7 @@ class PlayGameRequest extends FormRequest
                 $validator->errors()->add('game', 'Game is not active');
             }
 
-            // Check user balance for total bet amount
-            $user = auth()->user();
-            if ($user) {
-                $totalBetAmount = $this->input('betAmount', 0);
-
-                if ($user->balance < $totalBetAmount) {
-                    $validator->errors()->add('betAmount', 'Insufficient balance');
-                }
-            }
+            // Balance validation is now handled by BalanceCheckMiddleware
         });
     }
 }

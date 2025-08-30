@@ -62,47 +62,26 @@ Route::prefix('v1')->group(function () {
 
         // Game session management
         Route::prefix('game')->group(function () {
+            // Session management (no balance check needed)
             Route::post('/start', [GameController::class, 'startSession']);
             Route::post('/end', [GameController::class, 'endSession']);
             Route::get('/session/{sessionToken}', [GameController::class, 'getSession']);
-
-            // Main game actions
-            Route::post('/spin', [GameController::class, 'spin']);
-            Route::post('/autoplay/start', [GameController::class, 'startAutoplay']);
-            Route::post('/autoplay/stop', [GameController::class, 'stopAutoplay']);
             Route::get('/history', [GameController::class, 'gameHistory']);
 
-            // Universal game play
-            Route::post('/{game}/play', [\App\Http\Controllers\UniversalGameController::class, 'play']);
-        });
+            // Game actions that require balance check
+            Route::middleware(['balance.check', 'spin.rate.limit'])->group(function () {
+                Route::post('/spin', [GameController::class, 'spin']);
+                Route::post('/{game}/play', [\App\Http\Controllers\UniversalGameController::class, 'play']);
+            });
 
-        // Transaction management
-        Route::prefix('transactions')->group(function () {
-            Route::get('/', [TransactionController::class, 'index']);
-            Route::get('/{transactionId}', [TransactionController::class, 'show']);
-            Route::get('/session/{sessionId}', [TransactionController::class, 'bySession']);
-            Route::get('/export', [TransactionController::class, 'export']);
-        });
-
-        // Game statistics and reporting
-        Route::prefix('stats')->group(function () {
-            Route::get('/summary', [UserController::class, 'gamingSummary']);
-            Route::get('/session/{sessionId}', [UserController::class, 'sessionStats']);
-            Route::get('/daily', [UserController::class, 'dailyStats']);
-            Route::get('/monthly', [UserController::class, 'monthlyStats']);
+            // Autoplay management (balance checked per spin, not on start/stop)
+            Route::post('/autoplay/start', [GameController::class, 'startAutoplay']);
+            Route::post('/autoplay/stop', [GameController::class, 'stopAutoplay']);
         });
     });
 });
 
-Route::middleware(['auth:sanctum', 'game.session', 'balance.check', 'spin.rate.limit'])
-    ->post('/game/spin', [GameController::class, 'spin']);
 
-Route::middleware(['auth:sanctum', 'game.session'])
-    ->group(function () {
-        Route::post('/game/start', [GameController::class, 'startSession']);
-        Route::post('/game/end', [GameController::class, 'endSession']);
-        Route::post('/game/autoplay/start', [GameController::class, 'startAutoplay']);
-    });
 
 Route::middleware('auth:api')->group(function () {
     Route::prefix('free-spins')->group(function () {

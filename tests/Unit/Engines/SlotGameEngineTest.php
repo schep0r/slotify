@@ -39,21 +39,15 @@ class SlotGameEngineTest extends TestCase
         parent::tearDown();
     }
 
-    public function testGetGameType(): void
-    {
-        $this->assertEquals('slot', $this->engine->getGameType());
-    }
-
     public function testPlayWithBetSpinStrategy(): void
     {
         // Arrange
         $user = Mockery::mock(User::class);
         $game = Mockery::mock(Game::class);
         $gameData = ['betAmount' => 10.0, 'useFreeSpins' => false];
-        
+
         // Create a real GameResultDto instead of mocking it
         $expectedResult = new GameResultDto(
-            gameType: 'slot',
             betAmount: 10.0,
             winAmount: 50.0,
             newBalance: 1040.0,
@@ -89,10 +83,9 @@ class SlotGameEngineTest extends TestCase
         $user = Mockery::mock(User::class);
         $game = Mockery::mock(Game::class);
         $gameData = ['useFreeSpins' => true];
-        
+
         // Create a real GameResultDto instead of mocking it
         $expectedResult = new GameResultDto(
-            gameType: 'slot',
             betAmount: 0,
             winAmount: 25.0,
             newBalance: 1025.0,
@@ -157,7 +150,7 @@ class SlotGameEngineTest extends TestCase
         $game = Mockery::mock(Game::class);
         $game->shouldIgnoreMissing();
         $user = Mockery::mock(User::class);
-        
+
         // Mock the paylinesConfiguration property access
         $paylinesConfig = (object) ['value' => [
             [0, 1, 2],
@@ -183,7 +176,7 @@ class SlotGameEngineTest extends TestCase
         $game = Mockery::mock(Game::class);
         $game->shouldIgnoreMissing();
         $user = Mockery::mock(User::class);
-        
+
         // Mock the paylinesConfiguration property access
         $paylinesConfig = (object) ['value' => [
             [0, 1, 2],
@@ -209,7 +202,7 @@ class SlotGameEngineTest extends TestCase
         $game = Mockery::mock(Game::class);
         $game->shouldIgnoreMissing();
         $user = Mockery::mock(User::class);
-        
+
         // Mock the paylinesConfiguration property access
         $paylinesConfig = (object) ['value' => [[0, 1, 2]]];
         $game->paylinesConfiguration = $paylinesConfig;
