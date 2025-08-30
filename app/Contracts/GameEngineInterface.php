@@ -21,11 +21,6 @@ interface GameEngineInterface
     public function validateInput(array $gameData, Game $game, User $user): void;
 
     /**
-     * Get game type this engine handles
-     */
-    public function getGameType(): string;
-
-    /**
      * Get required input parameters for this game type
      */
     public function getRequiredInputs(): array;

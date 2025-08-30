@@ -3,7 +3,6 @@
 namespace Database\Seeders;
 
 use App\Enums\GameConfigurationType;
-use App\Enums\GameType;
 use App\Models\Game;
 use App\Models\GameConfiguration;
 use Illuminate\Database\Seeder;
@@ -16,16 +15,10 @@ class GameConfigurationSeeder extends Seeder
     public function run(): void
     {
         // Get all slot games to configure
-        $slotGames = Game::where('type', GameType::SLOT->value)->get();
+        $slotGames = Game::all();
 
         foreach ($slotGames as $game) {
             $this->createSlotGameConfiguration($game);
-        }
-
-        // Handle other game types if needed
-        $rouletteGames = Game::where('type', GameType::ROULETTE->value)->get();
-        foreach ($rouletteGames as $game) {
-            $this->createRouletteGameConfiguration($game);
         }
     }
 
@@ -104,15 +97,6 @@ class GameConfigurationSeeder extends Seeder
             'is_configurable' => true,
             'sort_order' => 6,
         ]);
-    }
-
-    /**
-     * Create configuration for roulette games
-     */
-    private function createRouletteGameConfiguration(Game $game): void
-    {
-        // Basic roulette configurations can be added here
-        // For now, we'll focus on slot games as requested
     }
 
     /**
@@ -290,33 +274,15 @@ class GameConfigurationSeeder extends Seeder
             $baseMultiplier = $symbol['value'];
 
             if ($game->reels >= 3) {
-                $paytable[] = [
-                    'symbol_id' => $symbol['symbol'],
-                    'symbol_name' => $symbol['name'],
-                    'count' => 3,
-                    'payout' => $baseMultiplier * 5,
-                    'multiplier' => 1.0
-                ];
+                $paytable[$symbol['symbol']][3] = $baseMultiplier * 5;
             }
 
             if ($game->reels >= 4) {
-                $paytable[] = [
-                    'symbol_id' => $symbol['symbol'],
-                    'symbol_name' => $symbol['name'],
-                    'count' => 4,
-                    'payout' => $baseMultiplier * 25,
-                    'multiplier' => 1.0
-                ];
+                $paytable[$symbol['symbol']][3] = $baseMultiplier * 10;
             }
 
             if ($game->reels >= 5) {
-                $paytable[] = [
-                    'symbol_id' => $symbol['symbol'],
-                    'symbol_name' => $symbol['name'],
-                    'count' => 5,
-                    'payout' => $baseMultiplier * 100,
-                    'multiplier' => 1.0
-                ];
+                $paytable[$symbol['symbol']][5] = $baseMultiplier * 25;
             }
         }
 

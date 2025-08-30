@@ -102,7 +102,14 @@ class GamePlayConsole extends Command
                 'total_bets' => $totalBets,
                 'rtp' => $totalWins / $totalBets * 100,
             ],
-            JSON_PRETTY_PRINT));
+            JSON_PRETTY_PRINT))
+        ;
+
+        if (count($errors) > 0) {
+            foreach ($errors as $msg) {
+                $this->line(" - " . $msg);
+            }
+        }
 
         return Command::SUCCESS;
     }

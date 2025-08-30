@@ -11,6 +11,8 @@ use App\Models\Game;
  */
 class ScatterResultProcessor
 {
+    private const KEY_SYMBOL = 'symbol_id';
+
     /**
      * Check for scatter symbol bonuses
      */
@@ -23,10 +25,10 @@ class ScatterResultProcessor
 
         foreach ($game->scatterConfigurations as $scatterConfigurationRecord) {
             $scatterConfiguration = $scatterConfigurationRecord->value;
-            $scatterCount = $this->countScatterSymbols($visibleSymbols, $scatterConfiguration['symbol']);
-            $scatterPositions = $this->getScatterPositions($visibleSymbols, $scatterConfiguration['symbol']);
+            $scatterCount = $this->countScatterSymbols($visibleSymbols, $scatterConfiguration[self::KEY_SYMBOL]);
+            $scatterPositions = $this->getScatterPositions($visibleSymbols, $scatterConfiguration[self::KEY_SYMBOL]);
 
-            if ($scatterConfiguration['pays_independently']) {
+            if (isset($scatterConfiguration['pays_independently'])) {
                 $payout += $betAmount * ($scatterConfiguration['paytable'][$scatterCount] ?? 0);
             }
 

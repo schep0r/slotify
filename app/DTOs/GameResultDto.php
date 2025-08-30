@@ -11,11 +11,10 @@ namespace App\DTOs;
 readonly class GameResultDto
 {
     public function __construct(
-        public string $gameType,
         public float $betAmount,
         public float $winAmount,
         public float $newBalance,
-        public SlotGameDataDto|RouletteGameDataDto $gameData,
+        public SlotGameDataDto $gameData,
     ) {
     }
 
@@ -25,7 +24,6 @@ readonly class GameResultDto
     public function toArray(): array
     {
         return [
-            'gameType' => $this->gameType,
             'betAmount' => $this->betAmount,
             'winAmount' => $this->winAmount,
             'newBalance' => $this->newBalance,

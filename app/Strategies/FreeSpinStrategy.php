@@ -10,7 +10,6 @@ use App\Contracts\ReelGeneratorInterface;
 use App\Contracts\SpinStrategyInterface;
 use App\DTOs\GameResultDto;
 use App\DTOs\SlotGameDataDto;
-use App\Enums\GameType;
 use App\Exceptions\InsufficientFreeSpinsException;
 use App\Managers\FreeSpinManager;
 use App\Managers\GameSessionManager;
@@ -36,6 +35,7 @@ class FreeSpinStrategy implements SpinStrategyInterface
 
         // Step 1: Check if user has available free spins
         $availableFreeSpins = $this->freeSpinManager->getAvailableFreeSpins($user, $game->id);
+
         if ($availableFreeSpins <= 0) {
             throw new InsufficientFreeSpinsException('No free spins available for this game');
         }
@@ -116,7 +116,6 @@ class FreeSpinStrategy implements SpinStrategyInterface
         );
 
         return new GameResultDto(
-            gameType: GameType::SLOT->value,
             betAmount: 0, // No bet amount for free spins
             winAmount: $payoutResult['totalPayout'],
             newBalance: $newBalance,

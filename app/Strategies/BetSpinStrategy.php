@@ -12,7 +12,6 @@ use App\Contracts\SpinStrategyInterface;
 use App\Contracts\TransactionManagerInterface;
 use App\DTOs\GameResultDto;
 use App\DTOs\SlotGameDataDto;
-use App\Enums\GameType;
 use App\Managers\GameSessionManager;
 use App\Models\Game;
 use App\Models\User;
@@ -62,7 +61,18 @@ class BetSpinStrategy implements SpinStrategyInterface
             $payoutResult['totalPayout']
         );
 
-        // Step 6: Log game round
+        // TODO: think about how to split this flow, to use queues to reduce load
+
+        // Step 6.1: Update Game session data
+        $gameSession
+            ->update([
+                'total_spins' => ++$gameSession->total_spins,
+                'total_bet' => $gameSession->total_bet + $betAmount,
+                'total_win' => $gameSession->total_win + $payoutResult['totalPayout'],
+            ])
+        ;
+
+        // Step 6.2: Log game round
         $this->gameLogger->logGameRound($gameSession, $payoutResult, $betAmount, $visibleSymbols);
 
         // Step 7: Return game result
@@ -102,7 +112,6 @@ class BetSpinStrategy implements SpinStrategyInterface
         );
 
         return new GameResultDto(
-            gameType: GameType::SLOT->value,
             betAmount: $payoutResult['betAmount'],
             winAmount: $payoutResult['totalPayout'],
             newBalance: $newBalance,

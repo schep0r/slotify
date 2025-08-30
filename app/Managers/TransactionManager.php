@@ -60,7 +60,6 @@ class TransactionManager implements TransactionManagerInterface
                 $betAmount,
                 $user->balance,
                 $user->balance - $betAmount,
-                ['game_type' => $gameSession->game->type->value]
             );
         }
 
@@ -72,7 +71,6 @@ class TransactionManager implements TransactionManagerInterface
                 $winAmount,
                 $user->balance - $betAmount,
                 $newBalance,
-                ['game_type' => $gameSession->game->type->value]
             );
         }
 

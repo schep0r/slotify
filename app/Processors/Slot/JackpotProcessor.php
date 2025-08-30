@@ -14,7 +14,7 @@ class JackpotProcessor
         // Very rare jackpot combination (5 jackpot symbols on center line)
         $centerLine = [];
         foreach ($visibleSymbols as $reel) {
-            $centerLine[] = $reel[3]; // Middle row
+            $centerLine[] = $reel[count($reel) / 2];
         }
 
         return count(array_filter($centerLine, fn($symbol) => $symbol === 'jackpot')) === 5;

@@ -7,7 +7,6 @@ namespace App\Engines;
 use App\Contracts\GameEngineInterface;
 use App\Contracts\SpinStrategyInterface;
 use App\DTOs\GameResultDto;
-use App\Enums\GameType;
 use App\Models\Game;
 use App\Models\User;
 use App\Strategies\BetSpinStrategy;
@@ -42,6 +41,7 @@ class SlotGameEngine implements GameEngineInterface
     public function play(User $user, Game $game, array $gameData): GameResultDto
     {
         $strategy = $this->getStrategy($gameData);
+
         return $strategy->execute($user, $game, $gameData);
     }
 
@@ -57,11 +57,6 @@ class SlotGameEngine implements GameEngineInterface
         }
 
         throw new InvalidArgumentException('No suitable strategy found for the given game data');
-    }
-
-    public function getGameType(): string
-    {
-        return GameType::SLOT->value;
     }
 
     public function validateInput(array $gameData, Game $game, User $user): void

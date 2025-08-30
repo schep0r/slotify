@@ -9,7 +9,7 @@ namespace App\Processors\Slot;
  */
 class WildResultProcessor
 {
-    public const SYMBOL_WILD = 'wild';
+    public const SYMBOL_WILD = 'WILD';
 
     /**
      * Calculate multiplier from wild symbols
