@@ -24,3 +24,9 @@ A Laravel-based application.
   php artisan serve
   ```
 
+- Recreate DB:
+  ```bash
+  php artisan db:wipe
+  php artisan migrate
+  php artisan db:seed
+  ```

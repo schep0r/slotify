@@ -1,36 +1,36 @@
 # Product Overview
 
-**Casino Platform** is a Laravel-based online casino gaming platform that provides:
+**Slots Game Platform** is a Laravel-based slot machine gaming application that provides:
 
-- **Multiple Casino Games**: Comprehensive gaming engines for slots, roulette, and future games (blackjack, poker, baccarat)
 - **Slot Machine Games**: Core slot gaming engine with configurable reels, paylines, and payout tables
-- **Roulette Games**: Full roulette implementation with betting systems and wheel mechanics
+- **Multiple Slot Variants**: Different slot game configurations with various themes and mechanics
 - **User Management**: Player accounts with balance tracking and transaction history
-- **Game Sessions**: Session-based gameplay with rate limiting and security controls
-- **Admin Panel**: Filament-based administrative interface for game and user management
-- **Bonus System**: Free spins, bonuses, and promotional mechanics for player engagement
-- **Real-time Gaming**: Vue.js frontend with real-time game interactions across all casino games
+- **Game Sessions**: Session-based slot gameplay with rate limiting and security controls
+- **Admin Panel**: Filament-based administrative interface for slot game and user management
+- **Bonus System**: Free spins, bonuses, and promotional mechanics for slot games
+- **Real-time Gaming**: Vue.js frontend with real-time slot game interactions
 
 ## Key Features
 
-- Universal game engine supporting multiple casino game types
-- Configurable game mechanics with customizable RTP, bet limits, and rules
-- Secure transaction processing with balance validation across all games
-- Game session management with timeout and concurrency controls
-- Comprehensive audit trail for all gaming activities
-- Admin tools for game configuration and player management
-- Responsive web interface with modern casino-themed UI components
-- Progressive jackpot systems and bonus mechanics
-- Real-time game results and player notifications
+- Dedicated slot game engine with comprehensive slot mechanics
+- Configurable slot game mechanics with customizable RTP, bet limits, and payline rules
+- Secure transaction processing with balance validation for slot games
+- Slot game session management with timeout and concurrency controls
+- Comprehensive audit trail for all slot gaming activities
+- Admin tools for slot game configuration and player management
+- Responsive web interface with modern slot game UI components
+- Progressive jackpot systems and bonus mechanics for slots
+- Real-time slot game results and player notifications
 
 ## Supported Games
 
-- **Slot Machines**: Multiple configurations with various themes, paylines, and bonus features
-- **Roulette**: European and American variants with comprehensive betting options
-- **Future Games**: Blackjack, Poker, Baccarat (planned expansions)
+- **Slot Machines**: Multiple slot configurations with various themes, paylines, and bonus features
+- **Classic Slots**: Traditional 3-reel slot machines
+- **Video Slots**: Modern 5-reel slots with advanced features
+- **Progressive Slots**: Slots with progressive jackpot systems
 
 ## Target Users
 
-- **Players**: End users playing various casino games through the web interface
-- **Operators**: Casino operators managing games, player accounts, and platform operations
-- **Administrators**: System admins configuring games, monitoring platform health, and managing casino operations
+- **Players**: End users playing slot games through the web interface
+- **Operators**: Game operators managing slot games, player accounts, and platform operations
+- **Administrators**: System admins configuring slot games, monitoring platform health, and managing slot game operations
