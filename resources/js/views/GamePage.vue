@@ -21,7 +21,9 @@ const gameStore = useGameStore();
 const authStore = useAuthStore();
 
 const handleSpin = async () => {
-    await gameStore.spin();
+    const gameId = props.gameId || route.params.gameId;
+
+    await gameStore.spin(gameId);
 };
 
 const handleBetChange = (newBet) => {

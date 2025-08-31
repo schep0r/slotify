@@ -32,30 +32,44 @@ class GameController extends Controller
     {
         $user = auth()->user();
 
-        return $this->gameEngine->play($user, $game, $request->toArray());
+        $result = $this->gameEngine->play($user, $game, $request->toArray());
+
+        return response()->json([
+            'success' => true,
+            'result' => $result,
+        ]);
     }
 
     public function settings(Game $game): JsonResponse
     {
         $paytable = $game->paytableConfiguration->value;
+        $reels = $game->reelsConfiguration->value;
+        $rows = $game->rowsConfiguration->value;
 
-        $result = [];
+        $paytableConverted = [];
+        $visibleSymbols = [];
+
         foreach ($paytable as $symbol => $combinations) {
             foreach ($combinations as $count => $amount) {
-                $result[] = [
+                $paytableConverted[] = [
                     'combo' => implode(' ', array_fill(0, $count, $symbol)),
-                    'payout' => $amount,
+                    'payout' => $amount . 'x',
                 ];
             }
         }
 
-        usort($result, function($a, $b) {
+        foreach ($reels as $reel) {
+            $visibleSymbols[] = array_slice($reel, rand(0, count($reel) - $rows), $rows);
+        }
+
+        usort($paytableConverted, function($a, $b) {
             return $b['payout'] <=> $a['payout'];
         });
 
         return response()->json([
             'success' => true,
-            'payouts' => $result,
+            'payouts' => $paytableConverted,
+            'visible_symbols' => $visibleSymbols
         ]);
     }
 }

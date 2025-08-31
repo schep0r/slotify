@@ -37,6 +37,10 @@ Route::prefix('v1')->group(function () {
         Route::get('/', [GameController::class, 'index']); // List available games
         Route::get('/{game}', [GameController::class, 'show']); // Game details
         Route::get('/{game}/settings', [GameController::class, 'settings']); // Game settings
+
+        Route::middleware(['auth:sanctum', 'balance.check', 'spin.rate.limit'])->group(function () {
+            Route::post('/{game}/play', [GameController::class, 'play']);
+        });
     });
 
     // Protected API routes (require authentication)

@@ -24,10 +24,10 @@ class GameRoundManager
             // Lock user balance to prevent concurrent modifications
             $user = User::where('id', $user->id)->lockForUpdate()->first();
 
-            $balanceBefore = $user->balance;
+            $balanceAfter = $user->balance;
             $betAmount = $spinData['bet_amount'];
             $winAmount = $spinData['win_amount'] ?? 0;
-            $balanceAfter = $balanceBefore - $betAmount + $winAmount;
+            $balanceBefore = $balanceAfter + $betAmount - $winAmount;
 
             // Create game round
             $gameRound = GameRound::create([
@@ -53,9 +53,6 @@ class GameRoundManager
                 'round_status' => 'completed',
                 'completed_at' => now(),
             ]);
-
-            // Update user balance
-            $user->update(['balance' => $balanceAfter]);
 
             // Log the transaction for audit
             Log::info('Game round processed', [

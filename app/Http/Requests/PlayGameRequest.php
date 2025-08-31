@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Engines\SlotGameEngine;
 use App\Models\Game;
 use Exception;
 use Illuminate\Foundation\Http\FormRequest;
@@ -19,7 +20,7 @@ class PlayGameRequest extends FormRequest
     /**
      * Get the validation rules that apply to the request.
      */
-    public function rules(): array
+    public function rules(SlotGameEngine $gameEngine): array
     {
         $game = $this->route('game');
 
@@ -29,28 +30,12 @@ class PlayGameRequest extends FormRequest
 
         // Get game-specific validation rules
         try {
-            $gameEngineFactory = app(GameEngineFactory::class);
-            $gameEngine = $gameEngineFactory->createForGame($game);
             $gameSpecificRules = $gameEngine->getRequiredInputs();
         } catch (Exception $e) {
             $gameSpecificRules = [];
         }
 
-        // Base rules that apply to all games
-        $baseRules = [
-            'betAmount' => [
-                'sometimes',
-                'numeric',
-                'min:0.01',
-                function ($attribute, $value, $fail) use ($game) {
-                    if ($value < $game->min_bet || $value > $game->max_bet) {
-                        $fail("Bet amount must be between {$game->min_bet} and {$game->max_bet}");
-                    }
-                }
-            ]
-        ];
-
-        return array_merge($baseRules, $gameSpecificRules);
+        return $gameSpecificRules;
     }
 
     /**

@@ -117,7 +117,7 @@ class PayoutProcessor implements PayoutCalculatorInterface
         }
 
         $consecutiveCount = 1;
-        for ($i = 0; $i < count($symbols); $i++) {
+        for ($i = 1; $i < count($symbols); $i++) {
             $currentSymbol = $symbols[$i];
 
             if ($currentSymbol === $firstSymbol || $currentSymbol === WildResultProcessor::SYMBOL_WILD) {
@@ -128,7 +128,7 @@ class PayoutProcessor implements PayoutCalculatorInterface
         }
 
         // Check if we have a winning combination
-        if ($consecutiveCount >= 2 && isset($this->paytable[$firstSymbol][$consecutiveCount])) {
+        if ($consecutiveCount >= 3 && isset($this->paytable[$firstSymbol][$consecutiveCount])) {
             $winningSymbol = $firstSymbol;
             $count = $consecutiveCount;
             $basePayout = $this->paytable[$firstSymbol][$consecutiveCount];
@@ -140,7 +140,7 @@ class PayoutProcessor implements PayoutCalculatorInterface
                 $betAmount / count($this->paylines)
             );
 
-            $payout = $basePayout * ($betAmount / count($this->paylines)) * $wildContribution['multiplier'];
+            $payout = $basePayout * $betAmount;
         }
 
         return [

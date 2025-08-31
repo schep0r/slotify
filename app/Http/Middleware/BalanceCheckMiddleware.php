@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Http\Middleware;
 
-use App\Exceptions\InsufficientBalanceException;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -30,7 +29,7 @@ class BalanceCheckMiddleware
         }
 
         $betAmount = $this->extractBetAmount($request);
-        
+
         if ($betAmount > 0 && $user->balance < $betAmount) {
             return response()->json([
                 'error' => 'Insufficient balance',
@@ -71,7 +70,7 @@ class BalanceCheckMiddleware
     {
         // Try different possible field names for bet amount
         $possibleFields = ['betAmount', 'bet_amount', 'amount', 'totalBet'];
-        
+
         foreach ($possibleFields as $field) {
             if ($request->has($field)) {
                 return (float) $request->input($field, 0);

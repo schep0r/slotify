@@ -73,3 +73,22 @@ export const getGameSettings = (gameId) => {
             throw error;
         });
 };
+
+export const playGame = (gameId, betAmount) => {
+    if (!gameId) {
+        return Promise.reject(new Error('Game ID is required'));
+    }
+
+    if (betAmount < 0) {
+        return Promise.reject(new Error('Bet amount must be a positive number'));
+    }
+
+    return api.post(`/games/${gameId}/play`, { betAmount })
+        .catch(error => {
+            // This will throw an error which will cause the promise to be rejected
+            handleApiError(error, 'Game', gameId);
+            // In case handleApiError doesn't throw (which shouldn't happen)
+            throw error;
+        });
+
+}
