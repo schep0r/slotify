@@ -50,7 +50,7 @@ class GameController extends Controller
         }
 
         usort($result, function($a, $b) {
-            return $a['payout'] <=> $b['payout'];
+            return $b['payout'] <=> $a['payout'];
         });
 
         return response()->json([

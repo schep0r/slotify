@@ -1,6 +1,6 @@
 <script setup>
 import { onMounted } from 'vue';
-import { useGamesStore } from '../stores/games';
+import { useGamesStore } from '../stores/gamesStore';
 import GameCard from '../components/Game/GameCard.vue';
 import PaginationControls from '../components/UI/PaginationControls.vue';
 import SearchInput from '../components/UI/SearchInput.vue';
